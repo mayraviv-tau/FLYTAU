@@ -48,7 +48,7 @@ CREATE TABLE FlightLine (
 -- מטוס
 CREATE TABLE Plane (
     plane_id INT PRIMARY KEY, -- מזהה מטוס
-    manufacturer ENUM('Boeing', 'Airbus') NOT NULL, -- יצרן
+    manufacturer ENUM('Boeing', 'Airbus', 'Dassault') NOT NULL, -- יצרן
     size_category ENUM('Large', 'Small') NOT NULL, -- גודל
     acquisition_date DATE NOT NULL -- תאריך רכישה
 );
@@ -60,8 +60,10 @@ CREATE TABLE Flight (
     destination_airport VARCHAR(50) NOT NULL,
     plane_id INT NOT NULL, -- מזהה מטוס(F)
     departure_datetime DATETIME NOT NULL, -- תאריך ושעת המראה
+    manager_id VARCHAR(9) NOT NULL, -- תעודת זהות
     status ENUM('Active', 'Full', 'Landed', 'Canceled') NOT NULL DEFAULT 'Active', -- סטטוס טיסה
-    FOREIGN KEY (plane_id) REFERENCES plane(plane_id),
+    FOREIGN KEY (plane_id) REFERENCES Plane(plane_id),
+    FOREIGN KEY (manager_id) REFERENCES Manager(id_number),
     FOREIGN KEY (origin_airport, destination_airport) 
         REFERENCES FlightLine(origin_airport, destination_airport)
 );
@@ -126,14 +128,12 @@ CREATE TABLE FlightOrder (
 -- כרטיס טיסה
 CREATE TABLE Ticket (
     order_id INT NOT NULL, -- קוד הזמנה(F)
-    flight_id INT NOT NULL, -- מזהה טיסה(F)
     plane_id INT NOT NULL, -- מזהה מטוס(F)
     class_type ENUM('Economy', 'Business') NOT NULL, -- סוג מחלקה(F)
     seat_number VARCHAR(10) NOT NULL, -- מספר מושב(F)
     price DECIMAL(10, 2) NOT NULL, -- מחיר
     PRIMARY KEY (order_id, plane_id, class_type, seat_number),
     FOREIGN KEY (order_id) REFERENCES FlightOrder(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (flight_id) REFERENCES Flight(flight_id),
     FOREIGN KEY (plane_id, class_type, seat_number) 
         REFERENCES Seat(plane_id, class_type, seat_number)
 );
