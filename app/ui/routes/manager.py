@@ -201,9 +201,9 @@ def report_occupancy():
     try:
         report_data = get_occupancy_report()
         return render_template('manager/report_details.html',
-                             report_type='Flight Occupancy',
+                             report_type='Average Flight Occupancy',
                              report_data=report_data,
-                             columns=['Flight ID', 'Route', 'Date', 'Capacity', 'Booked', 'Occupancy %'])
+                             columns=['Average System Occupancy (%)'])
     except APIError as e:
         flash(e.message, 'error')
         return redirect(url_for('manager.reports'))
@@ -218,7 +218,7 @@ def report_revenue():
         return render_template('manager/report_details.html',
                              report_type='Revenue Analysis',
                              report_data=report_data,
-                             columns=['Period', 'Total Revenue', 'Orders', 'Avg Order Value'])
+                             columns=['Size Category', 'Manufacturer', 'Class Type', 'Total Revenue', 'Tickets Sold Count'])
     except APIError as e:
         flash(e.message, 'error')
         return redirect(url_for('manager.reports'))
@@ -231,9 +231,9 @@ def report_staff_hours():
     try:
         report_data = get_staff_hours_report()
         return render_template('manager/report_details.html',
-                             report_type='Staff Working Hours',
+                             report_type='Staff Accumulated Flight Hours',
                              report_data=report_data,
-                             columns=['Staff ID', 'Name', 'Role', 'Total Hours', 'Flights'])
+                             columns=['Role', 'ID Number', 'First Name', 'Last Name', 'Long Haul Hours', 'Short Haul Hours', 'Total Hours'])
     except APIError as e:
         flash(e.message, 'error')
         return redirect(url_for('manager.reports'))
@@ -246,9 +246,9 @@ def report_cancellations():
     try:
         report_data = get_cancellations_report()
         return render_template('manager/report_details.html',
-                             report_type='Cancellation Statistics',
+                             report_type='Monthly Cancellation Rates',
                              report_data=report_data,
-                             columns=['Period', 'Total Cancellations', 'Customer Initiated', 'Flight Cancelled', 'Refund Amount'])
+                             columns=['Month/Year', 'Total Orders', 'Canceled Orders', 'Cancellation Rate (%)'])
     except APIError as e:
         flash(e.message, 'error')
         return redirect(url_for('manager.reports'))
@@ -261,9 +261,9 @@ def report_plane_activity():
     try:
         report_data = get_plane_activity_report()
         return render_template('manager/report_details.html',
-                             report_type='Plane Activity',
+                             report_type='Monthly Plane Activity Summary',
                              report_data=report_data,
-                             columns=['Plane ID', 'Model', 'Total Flights', 'Total Hours', 'Utilization %'])
+                             columns=['Month/Year', 'Plane ID', 'Flights Performed', 'Flights Canceled', 'Utilization (%)', 'Dominant Route'])
     except APIError as e:
         flash(e.message, 'error')
         return redirect(url_for('manager.reports'))
