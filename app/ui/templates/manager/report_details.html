@@ -7,7 +7,7 @@
     <h1>{{ report_type }}</h1>
 
     <div class="report-content">
-        {% if report_data %}
+        {% if report_data and report_data.data %}
         <div class="report-table">
             <table>
                 <thead>
@@ -18,11 +18,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in report_data %}
+                    {% for row in report_data.data %}
                     <tr>
                         {% if row is mapping %}
-                            {% for column in columns %}
-                            <td>{{ row.get(column, '—') }}</td>
+                            {% for value in row.values() %}
+                            <td>{{ value }}</td>
                             {% endfor %}
                         {% else %}
                             {% for value in row %}
