@@ -30,7 +30,7 @@
                     <select id="plane_id" name="plane_id" class="form-input" required>
                         <option value="">Select aircraft...</option>
                         {% for plane in planes %}
-                        <option value="{{ plane.PlaneID }}">{{ plane.PlaneID }} - {{ plane.Manufacturer }} {{ plane.Model }}</option>
+                        <option value="{{ plane.plane_id }}">Plane {{ plane.plane_id }} - {{ plane.manufacturer }} ({{ plane.size_category }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -50,8 +50,8 @@
                 <div class="checkbox-group">
                     {% for pilot in pilots %}
                     <label class="checkbox-label">
-                        <input type="checkbox" name="pilot_ids" value="{{ pilot.PilotID }}">
-                        {{ pilot.FirstName }} {{ pilot.LastName }} (ID: {{ pilot.PilotID }})
+                        <input type="checkbox" name="pilot_ids" value="{{ pilot.id_number }}">
+                        {{ pilot.first_name_hebrew }} {{ pilot.last_name_hebrew }} (ID: {{ pilot.id_number }})
                     </label>
                     {% endfor %}
                 </div>
@@ -62,8 +62,8 @@
                 <div class="checkbox-group">
                     {% for attendant in attendants %}
                     <label class="checkbox-label">
-                        <input type="checkbox" name="attendant_ids" value="{{ attendant.AttendantID }}">
-                        {{ attendant.FirstName }} {{ attendant.LastName }} (ID: {{ attendant.AttendantID }})
+                        <input type="checkbox" name="attendant_ids" value="{{ attendant.id_number }}">
+                        {{ attendant.first_name_hebrew }} {{ attendant.last_name_hebrew }} (ID: {{ attendant.id_number }})
                     </label>
                     {% endfor %}
                 </div>
@@ -72,7 +72,7 @@
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary btn-large">Create Flight</button>
-            <a href="{{ url_for('manager.dashboard') }}" class="btn btn-secondary">Cancel</a>
+            <a href="{{ url_for('manager.dashboard') }}" class="btn btn-secondary btn-large">Cancel</a>
         </div>
     </form>
 </div>
