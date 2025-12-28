@@ -24,16 +24,16 @@ def init_db_pool(config):
 
     try:
         _connection_pool = pooling.MySQLConnectionPool(
-            pool_name=config.DB_POOL_NAME,
-            pool_size=config.DB_POOL_SIZE,
-            host=config.DB_HOST,
-            port=config.DB_PORT,
-            database=config.DB_NAME,
-            user=config.DB_USER,
-            password=config.DB_PASSWORD,
+            pool_name=config['DB_POOL_NAME'],
+            pool_size=config['DB_POOL_SIZE'],
+            host=config['DB_HOST'],
+            port=config['DB_PORT'],
+            database=config['DB_NAME'],
+            user=config['DB_USER'],
+            password=config['DB_PASSWORD'],
             autocommit=False
         )
-        print(f"Database pool initialized: {config.DB_NAME}@{config.DB_HOST}")
+        print(f"Database pool initialized: {config['DB_NAME']}@{config['DB_HOST']}")
     except Error as e:
         print(f"Error initializing database pool: {e}")
         raise
