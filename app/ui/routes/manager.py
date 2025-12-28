@@ -44,9 +44,6 @@ def create_flight():
                 'attendant_ids': request.form.getlist('attendant_ids')
             }
 
-            # Call the admin flight creation logic
-            from ...server.routes.admin_flights import create_flight as create_flight_api
-
             # We'll manually call the database operations
             with get_db_connection() as conn:
                 cursor = conn.cursor(dictionary=True)
