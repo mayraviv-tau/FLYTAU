@@ -1,13 +1,13 @@
 """
-Main entry point for FLYTAU Flask application.
-Run this file to start the server.
+Run the FLYTAU Flask server from project root.
+Usage: python run.py
 """
 
 import os
 import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add app directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
 
 from server import create_app
 
