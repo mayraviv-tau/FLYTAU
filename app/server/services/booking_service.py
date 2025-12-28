@@ -1,0 +1,142 @@
+"""
+Booking service for FLYTAU application.
+Handles ticket booking and flight status updates.
+"""
+
+from datetime import datetime
+from ..db import execute_query, execute_transaction
+from ..db.queries import *
+from ..middleware.error_handlers import ValidationError, NotFoundError
+from ..services.flight_service import check_seat_availability, get_available_seats
+
+
+def create_booking(customer_email, flight_id, tickets):
+    """
+    Create a new booking with tickets.
+
+    Args:
+        customer_email (str): Customer email
+        flight_id (int): Flight ID
+        tickets (list): List of ticket dicts with class_type, seat_number, price
+
+    Returns:
+        dict: Created order information
+
+    Raises:
+        ValidationError: If validation fails
+        NotFoundError: If flight not found
+    """
+    # Get flight details
+    flight = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
+
+    if not flight:
+        raise NotFoundError(f"Flight {flight_id} not found")
+
+    # Check flight status
+    if flight['status'] not in ('Active', 'Full'):
+        raise ValidationError(f"Flight is {flight['status']}. Booking not allowed.")
+
+    # Check if flight has departed
+    departure_time = flight['departure_datetime']
+    if isinstance(departure_time, str):
+        departure_time = datetime.strptime(departure_time, '%Y-%m-%d %H:%M:%S')
+
+    if departure_time <= datetime.now():
+        raise ValidationError("Flight has already departed")
+
+    # Validate tickets
+    if not tickets or len(tickets) == 0:
+        raise ValidationError("At least one ticket is required")
+
+    # Check seat availability
+    seats_to_check = [
+        {'class_type': ticket['class_type'], 'seat_number': ticket['seat_number']}
+        for ticket in tickets
+    ]
+
+    all_available, unavailable_seats = check_seat_availability(
+        flight_id,
+        flight['plane_id'],
+        seats_to_check
+    )
+
+    if not all_available:
+        raise ValidationError(f"Seats not available: {', '.join(unavailable_seats)}")
+
+    # Calculate total payment
+    total_payment = sum(ticket['price'] for ticket in tickets)
+
+    # Check if customer is registered and has sufficient balance
+    customer_data = execute_query(GET_CUSTOMER_INFO, (customer_email,), fetch_one=True)
+
+    if customer_data and customer_data['balance'] is not None:
+        # Registered customer - check balance
+        balance = float(customer_data['balance'])
+        if balance < total_payment:
+            raise ValidationError(f"Insufficient balance. Required: ${total_payment:.2f}, Available: ${balance:.2f}")
+
+    # Prepare transaction operations
+    operations = []
+
+    # 1. Insert flight order
+    order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    operations.append((
+        INSERT_FLIGHT_ORDER,
+        (customer_email, flight_id, order_date, total_payment)
+    ))
+
+    # Execute order insertion first to get order_id
+    order_id_list = execute_transaction([operations[0]])
+    order_id = order_id_list[0]
+
+    # 2. Insert tickets
+    ticket_ops = []
+    for ticket in tickets:
+        ticket_ops.append((
+            INSERT_TICKET,
+            (order_id, flight['plane_id'], ticket['class_type'], ticket['seat_number'], ticket['price'])
+        ))
+
+    # 3. Deduct from customer balance if registered
+    if customer_data and customer_data['balance'] is not None:
+        ticket_ops.append((
+            DEDUCT_CUSTOMER_BALANCE,
+            (total_payment, customer_email, total_payment)
+        ))
+
+    # Execute ticket insertions and balance deduction
+    if ticket_ops:
+        execute_transaction(ticket_ops)
+
+    # 4. Check if flight should be marked as Full
+    available_seats = get_available_seats(flight_id, flight['plane_id'])
+    total_available = sum(available_seats.values())
+
+    if total_available == 0 and flight['status'] == 'Active':
+        execute_query(UPDATE_FLIGHT_STATUS, ('Full', flight_id), commit=True)
+
+    # Get created order details
+    order = execute_query(GET_ORDER_DETAILS, (order_id,), fetch_one=True)
+    order_tickets = execute_query(GET_ORDER_TICKETS, (order_id,), fetch_all=True)
+
+    return {
+        'order_id': order['order_id'],
+        'customer_email': order['customer_email'],
+        'flight_id': order['flight_id'],
+        'order_date': str(order['order_date']),
+        'order_status': order['order_status'],
+        'total_payment': float(order['total_payment']),
+        'flight': {
+            'origin_airport': order['origin_airport'],
+            'destination_airport': order['destination_airport'],
+            'departure_datetime': str(order['departure_datetime'])
+        },
+        'tickets': [
+            {
+                'class_type': ticket['class_type'],
+                'seat_number': ticket['seat_number'],
+                'price': float(ticket['price'])
+            }
+            for ticket in order_tickets
+        ]
+    }
