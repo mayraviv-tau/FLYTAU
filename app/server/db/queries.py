@@ -41,7 +41,7 @@ GET_REGISTERED_CUSTOMER = """
 
 # Get manager for login
 GET_MANAGER = """
-    SELECT id_number, first_name_hebrew, last_name_hebrew, password
+    SELECT id_number, first_name_hebrew, last_name_hebrew, account_password
     FROM Manager
     WHERE id_number = %s
 """

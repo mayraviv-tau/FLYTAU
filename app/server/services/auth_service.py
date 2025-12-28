@@ -116,7 +116,7 @@ def login_user(email_or_id, password, user_type='customer'):
             raise APIError("Invalid ID or password", 401)
 
         # Verify password (plain text comparison)
-        if password != manager_data['password']:
+        if password != manager_data['account_password']:
             raise APIError("Invalid ID or password", 401)
 
         return {
