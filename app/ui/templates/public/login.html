@@ -10,21 +10,21 @@
         <form method="POST" action="{{ url_for('public.login') }}" class="auth-form">
             <div class="form-tabs">
                 <label class="tab-label">
-                    <input type="radio" name="user_type" value="customer" checked>
+                    <input type="radio" name="user_type" value="customer" id="customer-tab" checked onchange="toggleLoginFields()">
                     <span>Customer</span>
                 </label>
                 <label class="tab-label">
-                    <input type="radio" name="user_type" value="manager">
+                    <input type="radio" name="user_type" value="manager" id="manager-tab" onchange="toggleLoginFields()">
                     <span>Manager</span>
                 </label>
             </div>
 
             <div class="form-group">
-                <label for="email" class="form-label">Email / ID Number</label>
+                <label for="email" class="form-label" id="email-label">Email</label>
                 <input type="text" id="email" name="email" class="form-input" required
-                       placeholder="Enter email or manager ID">
+                       placeholder="Enter your email">
                 <input type="text" id="id_number" name="id_number" class="form-input" style="display:none;"
-                       placeholder="Enter manager ID">
+                       placeholder="Enter manager ID" disabled>
             </div>
 
             <div class="form-group">
@@ -41,4 +41,35 @@
         </p>
     </div>
 </div>
+
+<script>
+function toggleLoginFields() {
+    const isManager = document.getElementById('manager-tab').checked;
+    const emailField = document.getElementById('email');
+    const idField = document.getElementById('id_number');
+    const label = document.getElementById('email-label');
+
+    if (isManager) {
+        emailField.style.display = 'none';
+        emailField.disabled = true;
+        emailField.removeAttribute('required');
+
+        idField.style.display = 'block';
+        idField.disabled = false;
+        idField.required = true;
+
+        label.textContent = 'ID Number';
+    } else {
+        emailField.style.display = 'block';
+        emailField.disabled = false;
+        emailField.required = true;
+
+        idField.style.display = 'none';
+        idField.disabled = true;
+        idField.removeAttribute('required');
+
+        label.textContent = 'Email';
+    }
+}
+</script>
 {% endblock %}
