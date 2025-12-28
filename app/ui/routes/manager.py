@@ -48,74 +48,72 @@ def create_flight():
             from ...server.routes.admin_flights import create_flight as create_flight_api
 
             # We'll manually call the database operations
-            conn = get_db_connection()
-            cursor = conn.cursor()
+            with get_db_connection() as conn:
+                cursor = conn.cursor()
 
-            try:
-                # Insert flight
-                cursor.execute("""
-                    INSERT INTO Flight (OriginAirport, DestinationAirport, PlaneID,
-                                      DepartureDateTime, FlightStatus, ManagerID)
-                    VALUES (%s, %s, %s, %s, 'Scheduled', %s)
-                """, (
-                    flight_data['origin_airport'],
-                    flight_data['destination_airport'],
-                    flight_data['plane_id'],
-                    flight_data['departure_datetime'],
-                    flight_data['manager_id']
-                ))
+                try:
+                    # Insert flight
+                    cursor.execute("""
+                        INSERT INTO Flight (origin_airport, destination_airport, plane_id,
+                                          departure_datetime, status, manager_id)
+                        VALUES (%s, %s, %s, %s, 'Active', %s)
+                    """, (
+                        flight_data['origin_airport'],
+                        flight_data['destination_airport'],
+                        flight_data['plane_id'],
+                        flight_data['departure_datetime'],
+                        flight_data['manager_id']
+                    ))
 
-                flight_id = cursor.lastrowid
+                    flight_id = cursor.lastrowid
 
-                # Assign pilots
-                for pilot_id in flight_data['pilot_ids']:
-                    if pilot_id:
-                        cursor.execute("""
-                            INSERT INTO FlightPilotAssignment (FlightID, PilotID)
-                            VALUES (%s, %s)
-                        """, (flight_id, pilot_id))
+                    # Assign pilots
+                    for pilot_id in flight_data['pilot_ids']:
+                        if pilot_id:
+                            cursor.execute("""
+                                INSERT INTO FlightPilotAssignment (flight_id, pilot_id)
+                                VALUES (%s, %s)
+                            """, (flight_id, pilot_id))
 
-                # Assign attendants
-                for attendant_id in flight_data['attendant_ids']:
-                    if attendant_id:
-                        cursor.execute("""
-                            INSERT INTO FlightAttendantAssignment (FlightID, AttendantID)
-                            VALUES (%s, %s)
-                        """, (flight_id, attendant_id))
+                    # Assign attendants
+                    for attendant_id in flight_data['attendant_ids']:
+                        if attendant_id:
+                            cursor.execute("""
+                                INSERT INTO FlightAttendantAssignment (flight_id, flight_attendant_id)
+                                VALUES (%s, %s)
+                            """, (flight_id, attendant_id))
 
-                conn.commit()
-                flash(f'Flight {flight_id} created successfully!', 'success')
-                return redirect(url_for('manager.manage_flights'))
+                    conn.commit()
+                    flash(f'Flight {flight_id} created successfully!', 'success')
+                    return redirect(url_for('manager.manage_flights'))
 
-            except Exception as e:
-                conn.rollback()
-                raise APIError(f'Failed to create flight: {str(e)}', 500)
-            finally:
-                cursor.close()
-                conn.close()
+                except Exception as e:
+                    conn.rollback()
+                    raise APIError(f'Failed to create flight: {str(e)}', 500)
+                finally:
+                    cursor.close()
 
         except APIError as e:
             flash(e.message, 'error')
 
     # GET: Show form with available planes and crew
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
 
-        # Get available planes
-        cursor.execute("SELECT PlaneID, Manufacturer, Model FROM Plane WHERE PlaneStatus = 'Active'")
-        planes = cursor.fetchall()
+            # Get available planes
+            cursor.execute("SELECT plane_id, manufacturer, size_category FROM Plane")
+            planes = cursor.fetchall()
 
-        # Get available pilots
-        cursor.execute("SELECT PilotID, FirstName, LastName FROM Pilot")
-        pilots = cursor.fetchall()
+            # Get available pilots
+            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew FROM Pilot")
+            pilots = cursor.fetchall()
 
-        # Get available attendants
-        cursor.execute("SELECT AttendantID, FirstName, LastName FROM FlightAttendant")
-        attendants = cursor.fetchall()
+            # Get available attendants
+            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew FROM FlightAttendant")
+            attendants = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
+            cursor.close()
 
         return render_template('manager/create_flight.html',
                              planes=planes,
@@ -144,46 +142,45 @@ def manage_flights():
 def cancel_flight(flight_id):
     """Cancel flight."""
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
 
-        # Update flight status
-        cursor.execute("""
-            UPDATE Flight
-            SET FlightStatus = 'Cancelled'
-            WHERE FlightID = %s
-        """, (flight_id,))
-
-        # Get affected orders
-        cursor.execute("""
-            SELECT OrderID, CustomerEmail, TotalPayment
-            FROM FlightOrder
-            WHERE FlightID = %s AND OrderStatus = 'Confirmed'
-        """, (flight_id,))
-
-        orders = cursor.fetchall()
-
-        # Process refunds
-        for order_id, customer_email, total_payment in orders:
-            # Update order status
+            # Update flight status
             cursor.execute("""
-                UPDATE FlightOrder
-                SET OrderStatus = 'Cancelled'
-                WHERE OrderID = %s
-            """, (order_id,))
+                UPDATE Flight
+                SET status = 'Canceled'
+                WHERE flight_id = %s
+            """, (flight_id,))
 
-            # Refund to registered customers
+            # Get affected orders
             cursor.execute("""
-                UPDATE RegisteredCustomer
-                SET Balance = Balance + %s
-                WHERE Email = %s
-            """, (total_payment, customer_email))
+                SELECT order_id, customer_email, total_payment
+                FROM FlightOrder
+                WHERE flight_id = %s AND order_status = 'Active'
+            """, (flight_id,))
 
-        conn.commit()
-        cursor.close()
-        conn.close()
+            orders = cursor.fetchall()
 
-        flash(f'Flight {flight_id} cancelled. {len(orders)} orders refunded.', 'success')
+            # Process refunds
+            for order_id, customer_email, total_payment in orders:
+                # Update order status
+                cursor.execute("""
+                    UPDATE FlightOrder
+                    SET order_status = 'Canceled_By_Company'
+                    WHERE order_id = %s
+                """, (order_id,))
+
+                # Refund to registered customers
+                cursor.execute("""
+                    UPDATE RegisteredCustomer
+                    SET balance = balance + %s
+                    WHERE email = %s
+                """, (total_payment, customer_email))
+
+            conn.commit()
+            cursor.close()
+
+            flash(f'Flight {flight_id} cancelled. {len(orders)} orders refunded.', 'success')
     except Exception as e:
         flash(f'Error cancelling flight: {str(e)}', 'error')
 
