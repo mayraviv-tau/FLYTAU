@@ -3,13 +3,12 @@ Admin flight management routes for FLYTAU application.
 Handles flight creation and cancellation (managers only).
 """
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, jsonify
 from datetime import datetime, timedelta
 from ..db import execute_query, execute_transaction
 from ..db.queries import *
 from ..middleware.auth import manager_required, get_current_user
-from ..middleware.error_handlers import ValidationError, NotFoundError
-from ..utils.responses import success_response
+from ..middleware.error_handlers import APIError
 
 bp = Blueprint('admin_flights', __name__)
 
@@ -40,7 +39,7 @@ def create_flight():
     data = request.get_json()
 
     if not data:
-        raise ValidationError("Request body is required")
+        raise APIError("Request body is required", 400)
 
     # Extract fields
     origin_airport = data.get('origin_airport')
@@ -52,7 +51,7 @@ def create_flight():
 
     # Validate required fields
     if not all([origin_airport, destination_airport, plane_id, departure_datetime]):
-        raise ValidationError("Missing required fields: origin_airport, destination_airport, plane_id, departure_datetime")
+        raise APIError("Missing required fields: origin_airport, destination_airport, plane_id, departure_datetime", 400)
 
     # Validate flight line exists
     flight_line = execute_query(
@@ -62,7 +61,7 @@ def create_flight():
     )
 
     if not flight_line:
-        raise ValidationError(f"Flight route {origin_airport}-{destination_airport} does not exist")
+        raise APIError(f"Flight route {origin_airport}-{destination_airport} does not exist", 400)
 
     flight_duration = float(flight_line['flight_duration'])
 
@@ -70,7 +69,7 @@ def create_flight():
     plane = execute_query(CHECK_PLANE_EXISTS, (plane_id,), fetch_one=True)
 
     if not plane:
-        raise NotFoundError(f"Plane {plane_id} not found")
+        raise APIError(f"Plane {plane_id} not found", 404)
 
     size_category = plane['size_category']
 
@@ -90,30 +89,30 @@ def create_flight():
 
     # Validate crew count
     if len(pilot_ids) != required_pilots:
-        raise ValidationError(f"Flight requires {required_pilots} pilots, got {len(pilot_ids)}")
+        raise APIError(f"Flight requires {required_pilots} pilots, got {len(pilot_ids)}", 400)
 
     if len(attendant_ids) != required_attendants:
-        raise ValidationError(f"Flight requires {required_attendants} flight attendants, got {len(attendant_ids)}")
+        raise APIError(f"Flight requires {required_attendants} flight attendants, got {len(attendant_ids)}", 400)
 
     # Validate pilot qualifications
     for pilot_id in pilot_ids:
         pilot = execute_query(CHECK_PILOT_QUALIFICATION, (pilot_id,), fetch_one=True)
 
         if not pilot:
-            raise NotFoundError(f"Pilot {pilot_id} not found")
+            raise APIError(f"Pilot {pilot_id} not found", 404)
 
         if is_long_haul and not pilot['is_long_haul_qualified']:
-            raise ValidationError(f"Pilot {pilot_id} is not qualified for long-haul flights")
+            raise APIError(f"Pilot {pilot_id} is not qualified for long-haul flights", 400)
 
     # Validate attendant qualifications
     for attendant_id in attendant_ids:
         attendant = execute_query(CHECK_ATTENDANT_QUALIFICATION, (attendant_id,), fetch_one=True)
 
         if not attendant:
-            raise NotFoundError(f"Flight attendant {attendant_id} not found")
+            raise APIError(f"Flight attendant {attendant_id} not found", 404)
 
         if is_long_haul and not attendant['is_long_haul_qualified']:
-            raise ValidationError(f"Flight attendant {attendant_id} is not qualified for long-haul flights")
+            raise APIError(f"Flight attendant {attendant_id} is not qualified for long-haul flights", 400)
 
     # Check crew availability (no schedule conflicts)
     # Assume conflict window is departure_time ± flight_duration hours
@@ -129,7 +128,7 @@ def create_flight():
         )
 
         if conflicts:
-            raise ValidationError(f"Pilot {pilot_id} has schedule conflict with flight {conflicts[0]['flight_id']}")
+            raise APIError(f"Pilot {pilot_id} has schedule conflict with flight {conflicts[0]['flight_id']}", 400)
 
     for attendant_id in attendant_ids:
         conflicts = execute_query(
@@ -139,7 +138,7 @@ def create_flight():
         )
 
         if conflicts:
-            raise ValidationError(f"Flight attendant {attendant_id} has schedule conflict with flight {conflicts[0]['flight_id']}")
+            raise APIError(f"Flight attendant {attendant_id} has schedule conflict with flight {conflicts[0]['flight_id']}", 400)
 
     # Create flight with crew assignments (transaction)
     operations = []
@@ -169,8 +168,9 @@ def create_flight():
     # Get created flight details
     flight = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
 
-    return success_response(
-        data={
+    return jsonify({
+        'success': True,
+        'data': {
             'flight_id': flight['flight_id'],
             'origin_airport': flight['origin_airport'],
             'destination_airport': flight['destination_airport'],
@@ -180,9 +180,8 @@ def create_flight():
             'pilots_assigned': len(pilot_ids),
             'attendants_assigned': len(attendant_ids)
         },
-        message="Flight created successfully",
-        status_code=201
-    )
+        'message': "Flight created successfully"
+    }), 201
 
 
 @bp.route('/flights/<int:flight_id>', methods=['DELETE'])
@@ -205,14 +204,14 @@ def cancel_flight(flight_id):
     flight = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
 
     if not flight:
-        raise NotFoundError(f"Flight {flight_id} not found")
+        raise APIError(f"Flight {flight_id} not found", 404)
 
     # Check if flight can be canceled
     if flight['status'] == 'Landed':
-        raise ValidationError("Cannot cancel a flight that has already landed")
+        raise APIError("Cannot cancel a flight that has already landed", 400)
 
     if flight['status'] == 'Canceled':
-        raise ValidationError("Flight is already canceled")
+        raise APIError("Flight is already canceled", 400)
 
     # Get all active orders for this flight
     active_orders = execute_query(GET_FLIGHT_ACTIVE_ORDERS, (flight_id,), fetch_all=True)
@@ -248,12 +247,13 @@ def cancel_flight(flight_id):
     # Execute transaction
     execute_transaction(operations)
 
-    return success_response(
-        data={
+    return jsonify({
+        'success': True,
+        'data': {
             'flight_id': flight_id,
             'status': 'Canceled',
             'orders_canceled': len(active_orders),
             'total_refunded': sum(float(order['total_payment']) for order in active_orders)
         },
-        message="Flight canceled successfully"
-    )
+        'message': "Flight canceled successfully"
+    }), 200

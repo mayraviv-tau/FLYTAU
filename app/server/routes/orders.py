@@ -3,12 +3,11 @@ Order routes for FLYTAU application.
 Handles booking creation and order management.
 """
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, jsonify
 from ..services.booking_service import create_booking
 from ..services.order_service import get_user_orders, get_order_details, cancel_order
 from ..middleware.auth import login_required, get_current_user
-from ..middleware.error_handlers import ValidationError, AuthorizationError
-from ..utils.responses import success_response
+from ..middleware.error_handlers import APIError
 
 bp = Blueprint('orders', __name__)
 
@@ -39,26 +38,26 @@ def create_booking_route():
     current_user = get_current_user()
 
     if current_user['user_type'] != 'customer':
-        raise AuthorizationError("Only customers can create bookings")
+        raise APIError("Only customers can create bookings", 403)
 
     data = request.get_json()
 
     if not data:
-        raise ValidationError("Request body is required")
+        raise APIError("Request body is required", 400)
 
     flight_id = data.get('flight_id')
     tickets = data.get('tickets', [])
 
     if not flight_id:
-        raise ValidationError("flight_id is required")
+        raise APIError("flight_id is required", 400)
 
     if not tickets:
-        raise ValidationError("At least one ticket is required")
+        raise APIError("At least one ticket is required", 400)
 
     # Validate ticket structure
     for ticket in tickets:
         if not all(k in ticket for k in ['class_type', 'seat_number', 'price']):
-            raise ValidationError("Each ticket must have class_type, seat_number, and price")
+            raise APIError("Each ticket must have class_type, seat_number, and price", 400)
 
     # Create booking
     order = create_booking(
@@ -67,11 +66,11 @@ def create_booking_route():
         tickets=tickets
     )
 
-    return success_response(
-        data=order,
-        message="Booking created successfully",
-        status_code=201
-    )
+    return jsonify({
+        'success': True,
+        'data': order,
+        'message': "Booking created successfully"
+    }), 201
 
 
 @bp.route('/orders', methods=['GET'])
@@ -90,7 +89,7 @@ def get_orders():
     current_user = get_current_user()
 
     if current_user['user_type'] != 'customer':
-        raise AuthorizationError("Only customers can view orders")
+        raise APIError("Only customers can view orders", 403)
 
     filter_type = request.args.get('filter')
 
@@ -100,10 +99,11 @@ def get_orders():
     # Convert to dict
     orders_data = [order.to_dict() for order in orders]
 
-    return success_response(
-        data={'orders': orders_data},
-        message=f"Found {len(orders_data)} order(s)"
-    )
+    return jsonify({
+        'success': True,
+        'data': {'orders': orders_data},
+        'message': f"Found {len(orders_data)} order(s)"
+    }), 200
 
 
 @bp.route('/orders/<int:order_id>', methods=['GET'])
@@ -129,7 +129,10 @@ def get_order(order_id):
     # Get order details
     order = get_order_details(order_id, customer_email)
 
-    return success_response(data=order.to_dict())
+    return jsonify({
+        'success': True,
+        'data': order.to_dict()
+    }), 200
 
 
 @bp.route('/orders/<int:order_id>', methods=['DELETE'])
@@ -151,12 +154,13 @@ def cancel_order_route(order_id):
     current_user = get_current_user()
 
     if current_user['user_type'] != 'customer':
-        raise AuthorizationError("Only customers can cancel orders")
+        raise APIError("Only customers can cancel orders", 403)
 
     # Cancel order
     result = cancel_order(order_id, current_user['user_id'])
 
-    return success_response(
-        data=result,
-        message="Order canceled successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': result,
+        'message': "Order canceled successfully"
+    }), 200

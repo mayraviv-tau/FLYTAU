@@ -6,7 +6,7 @@ Handles flight search and seat availability.
 from datetime import datetime
 from ..db import execute_query
 from ..db.queries import *
-from ..middleware.error_handlers import NotFoundError, ValidationError
+from ..middleware.error_handlers import APIError
 from ..models.flight import Flight, FlightDetails
 
 
@@ -101,13 +101,13 @@ def get_flight_details(flight_id):
         FlightDetails: Flight details with seat map
 
     Raises:
-        NotFoundError: If flight not found
+        APIError: If flight not found
     """
     # Get flight info
     flight_data = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
 
     if not flight_data:
-        raise NotFoundError(f"Flight {flight_id} not found")
+        raise APIError(f"Flight {flight_id} not found", 404)
 
     # Create flight object
     flight = Flight(

@@ -3,9 +3,8 @@ Flight routes for FLYTAU application.
 Handles flight search and details.
 """
 
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from ..services.flight_service import search_flights, get_flight_details
-from ..utils.responses import success_response
 
 bp = Blueprint('flights', __name__)
 
@@ -34,10 +33,11 @@ def get_flights():
     # Convert to dict
     flights_data = [flight.to_dict() for flight in flights]
 
-    return success_response(
-        data={'flights': flights_data},
-        message=f"Found {len(flights_data)} flight(s)"
-    )
+    return jsonify({
+        'success': True,
+        'data': {'flights': flights_data},
+        'message': f"Found {len(flights_data)} flight(s)"
+    }), 200
 
 
 @bp.route('/flights/<int:flight_id>', methods=['GET'])
@@ -55,4 +55,7 @@ def get_flight(flight_id):
     # Get flight details
     flight = get_flight_details(flight_id)
 
-    return success_response(data=flight.to_dict())
+    return jsonify({
+        'success': True,
+        'data': flight.to_dict()
+    }), 200

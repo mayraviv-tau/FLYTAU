@@ -6,7 +6,7 @@ Handles ticket booking and flight status updates.
 from datetime import datetime
 from ..db import execute_query, execute_transaction
 from ..db.queries import *
-from ..middleware.error_handlers import ValidationError, NotFoundError
+from ..middleware.error_handlers import APIError
 from ..services.flight_service import check_seat_availability, get_available_seats
 
 
@@ -23,18 +23,17 @@ def create_booking(customer_email, flight_id, tickets):
         dict: Created order information
 
     Raises:
-        ValidationError: If validation fails
-        NotFoundError: If flight not found
+        APIError: If validation fails or flight not found
     """
     # Get flight details
     flight = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
 
     if not flight:
-        raise NotFoundError(f"Flight {flight_id} not found")
+        raise APIError(f"Flight {flight_id} not found", 404)
 
     # Check flight status
     if flight['status'] not in ('Active', 'Full'):
-        raise ValidationError(f"Flight is {flight['status']}. Booking not allowed.")
+        raise APIError(f"Flight is {flight['status']}. Booking not allowed.", 400)
 
     # Check if flight has departed
     departure_time = flight['departure_datetime']
@@ -42,11 +41,11 @@ def create_booking(customer_email, flight_id, tickets):
         departure_time = datetime.strptime(departure_time, '%Y-%m-%d %H:%M:%S')
 
     if departure_time <= datetime.now():
-        raise ValidationError("Flight has already departed")
+        raise APIError("Flight has already departed", 400)
 
     # Validate tickets
     if not tickets or len(tickets) == 0:
-        raise ValidationError("At least one ticket is required")
+        raise APIError("At least one ticket is required", 400)
 
     # Check seat availability
     seats_to_check = [
@@ -61,7 +60,7 @@ def create_booking(customer_email, flight_id, tickets):
     )
 
     if not all_available:
-        raise ValidationError(f"Seats not available: {', '.join(unavailable_seats)}")
+        raise APIError(f"Seats not available: {', '.join(unavailable_seats)}", 400)
 
     # Calculate total payment
     total_payment = sum(ticket['price'] for ticket in tickets)
@@ -73,7 +72,7 @@ def create_booking(customer_email, flight_id, tickets):
         # Registered customer - check balance
         balance = float(customer_data['balance'])
         if balance < total_payment:
-            raise ValidationError(f"Insufficient balance. Required: ${total_payment:.2f}, Available: ${balance:.2f}")
+            raise APIError(f"Insufficient balance. Required: ${total_payment:.2f}, Available: ${balance:.2f}", 400)
 
     # Prepare transaction operations
     operations = []

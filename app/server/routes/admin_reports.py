@@ -3,7 +3,7 @@ Admin report routes for FLYTAU application.
 Provides access to analytical reports for managers.
 """
 
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from ..services.report_service import (
     get_occupancy_report,
     get_revenue_report,
@@ -12,7 +12,6 @@ from ..services.report_service import (
     get_plane_activity_report
 )
 from ..middleware.auth import manager_required
-from ..utils.responses import success_response
 
 bp = Blueprint('admin_reports', __name__)
 
@@ -30,10 +29,11 @@ def occupancy_report():
     """
     report = get_occupancy_report()
 
-    return success_response(
-        data=report,
-        message="Occupancy report generated successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': report,
+        'message': "Occupancy report generated successfully"
+    }), 200
 
 
 @bp.route('/revenue', methods=['GET'])
@@ -49,10 +49,11 @@ def revenue_report():
     """
     report = get_revenue_report()
 
-    return success_response(
-        data=report,
-        message="Revenue report generated successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': report,
+        'message': "Revenue report generated successfully"
+    }), 200
 
 
 @bp.route('/staff-hours', methods=['GET'])
@@ -68,10 +69,11 @@ def staff_hours_report():
     """
     report = get_staff_hours_report()
 
-    return success_response(
-        data=report,
-        message="Staff hours report generated successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': report,
+        'message': "Staff hours report generated successfully"
+    }), 200
 
 
 @bp.route('/cancellations', methods=['GET'])
@@ -87,10 +89,11 @@ def cancellations_report():
     """
     report = get_cancellations_report()
 
-    return success_response(
-        data=report,
-        message="Cancellations report generated successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': report,
+        'message': "Cancellations report generated successfully"
+    }), 200
 
 
 @bp.route('/plane-activity', methods=['GET'])
@@ -106,7 +109,8 @@ def plane_activity_report():
     """
     report = get_plane_activity_report()
 
-    return success_response(
-        data=report,
-        message="Plane activity report generated successfully"
-    )
+    return jsonify({
+        'success': True,
+        'data': report,
+        'message': "Plane activity report generated successfully"
+    }), 200

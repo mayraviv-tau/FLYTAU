@@ -6,7 +6,7 @@ Handles order retrieval and cancellation.
 from datetime import datetime
 from ..db import execute_query, execute_transaction
 from ..db.queries import *
-from ..middleware.error_handlers import ValidationError, NotFoundError, AuthorizationError
+from ..middleware.error_handlers import APIError
 from ..models.order import Order, Ticket
 from ..services.flight_service import get_available_seats
 
@@ -81,18 +81,17 @@ def get_order_details(order_id, customer_email=None):
         Order: Order object
 
     Raises:
-        NotFoundError: If order not found
-        AuthorizationError: If customer doesn't own the order
+        APIError: If order not found or customer doesn't own the order
     """
     # Get order
     order_data = execute_query(GET_ORDER_DETAILS, (order_id,), fetch_one=True)
 
     if not order_data:
-        raise NotFoundError(f"Order {order_id} not found")
+        raise APIError(f"Order {order_id} not found", 404)
 
     # Check ownership if customer_email provided
     if customer_email and order_data['customer_email'] != customer_email:
-        raise AuthorizationError("You don't have permission to view this order")
+        raise APIError("You don't have permission to view this order", 403)
 
     # Get tickets
     tickets_data = execute_query(GET_ORDER_TICKETS, (order_id,), fetch_all=True)
@@ -135,23 +134,21 @@ def cancel_order(order_id, customer_email):
         dict: Cancellation result with refund information
 
     Raises:
-        NotFoundError: If order not found
-        AuthorizationError: If customer doesn't own the order
-        ValidationError: If order cannot be canceled
+        APIError: If order not found, customer doesn't own the order, or order cannot be canceled
     """
     # Get order
     order_data = execute_query(GET_ORDER_DETAILS, (order_id,), fetch_one=True)
 
     if not order_data:
-        raise NotFoundError(f"Order {order_id} not found")
+        raise APIError(f"Order {order_id} not found", 404)
 
     # Check ownership
     if order_data['customer_email'] != customer_email:
-        raise AuthorizationError("You don't have permission to cancel this order")
+        raise APIError("You don't have permission to cancel this order", 403)
 
     # Check if order is Active
     if order_data['order_status'] != 'Active':
-        raise ValidationError(f"Order is {order_data['order_status']}. Cannot cancel.")
+        raise APIError(f"Order is {order_data['order_status']}. Cannot cancel.", 400)
 
     # Check if flight has departed
     departure_time = order_data['departure_datetime']
@@ -159,7 +156,7 @@ def cancel_order(order_id, customer_email):
         departure_time = datetime.strptime(departure_time, '%Y-%m-%d %H:%M:%S')
 
     if departure_time <= datetime.now():
-        raise ValidationError("Cannot cancel order. Flight has already departed.")
+        raise APIError("Cannot cancel order. Flight has already departed.", 400)
 
     # Calculate refund (95% refund, 5% cancellation fee)
     original_payment = float(order_data['total_payment'])

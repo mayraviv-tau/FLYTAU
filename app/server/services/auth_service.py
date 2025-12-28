@@ -1,14 +1,14 @@
 """
 Authentication service for FLYTAU application.
 Handles user registration and login.
+Simplified for academic exercise - uses plain text passwords.
 """
 
 from datetime import date
 from ..db import execute_query, execute_transaction
 from ..db.queries import *
-from ..utils.password import hash_password, verify_password
 from ..utils.validators import validate_email, validate_password
-from ..middleware.error_handlers import ValidationError, AuthenticationError
+from ..middleware.error_handlers import APIError
 from ..models.user import User, RegisteredCustomer, Manager
 
 
@@ -29,31 +29,28 @@ def register_customer(email, password, first_name, last_name, birth_date, passpo
         RegisteredCustomer: Created customer object
 
     Raises:
-        ValidationError: If validation fails
+        APIError: If validation fails
     """
     # Validate email
     if not validate_email(email):
-        raise ValidationError("Invalid email format")
+        raise APIError("Invalid email format", 400)
 
     # Validate password
     is_valid, error_msg = validate_password(password)
     if not is_valid:
-        raise ValidationError(error_msg)
+        raise APIError(error_msg, 400)
 
     # Check if customer already exists
     existing = execute_query(CHECK_CUSTOMER_EXISTS, (email,), fetch_one=True)
     if existing:
-        raise ValidationError("Email already registered")
+        raise APIError("Email already registered", 400)
 
-    # Hash password
-    hashed_password = hash_password(password)
-
-    # Prepare transaction operations
+    # Prepare transaction operations (plain text password)
     operations = [
         # Insert into Customer table
         (INSERT_CUSTOMER, (email, first_name, last_name)),
-        # Insert into RegisteredCustomer table
-        (INSERT_REGISTERED_CUSTOMER, (email, str(date.today()), birth_date, passport_number, hashed_password))
+        # Insert into RegisteredCustomer table with plain text password
+        (INSERT_REGISTERED_CUSTOMER, (email, str(date.today()), birth_date, passport_number, password))
     ]
 
     # Add phone numbers if provided
@@ -78,6 +75,7 @@ def register_customer(email, password, first_name, last_name, birth_date, passpo
 def login_user(email_or_id, password, user_type='customer'):
     """
     Authenticate a user (customer or manager).
+    Uses plain text password comparison.
 
     Args:
         email_or_id (str): Email (customer) or ID number (manager)
@@ -88,18 +86,18 @@ def login_user(email_or_id, password, user_type='customer'):
         dict: User information for session
 
     Raises:
-        AuthenticationError: If authentication fails
+        APIError: If authentication fails
     """
     if user_type == 'customer':
         # Query registered customer
         user_data = execute_query(GET_REGISTERED_CUSTOMER, (email_or_id,), fetch_one=True)
 
         if not user_data:
-            raise AuthenticationError("Invalid email or password")
+            raise APIError("Invalid email or password", 401)
 
-        # Verify password
-        if not verify_password(password, user_data['account_password']):
-            raise AuthenticationError("Invalid email or password")
+        # Verify password (plain text comparison)
+        if password != user_data['account_password']:
+            raise APIError("Invalid email or password", 401)
 
         return {
             'user_id': user_data['email'],
@@ -115,23 +113,11 @@ def login_user(email_or_id, password, user_type='customer'):
         manager_data = execute_query(GET_MANAGER, (email_or_id,), fetch_one=True)
 
         if not manager_data:
-            raise AuthenticationError("Invalid ID or password")
+            raise APIError("Invalid ID or password", 401)
 
-        # Verify password
-        stored_password = manager_data['password']
-
-        # Check if password is already hashed (starts with $2b$)
-        if stored_password.startswith('$2b$'):
-            # Already hashed, verify with bcrypt
-            if not verify_password(password, stored_password):
-                raise AuthenticationError("Invalid ID or password")
-        else:
-            # Plain text password (from seed data), check directly
-            if password != stored_password:
-                raise AuthenticationError("Invalid ID or password")
-
-            # TODO: Hash the password and update in database for future logins
-            # This is a one-time migration for seed data
+        # Verify password (plain text comparison)
+        if password != manager_data['password']:
+            raise APIError("Invalid ID or password", 401)
 
         return {
             'user_id': manager_data['id_number'],
@@ -142,7 +128,7 @@ def login_user(email_or_id, password, user_type='customer'):
         }
 
     else:
-        raise ValidationError("Invalid user type")
+        raise APIError("Invalid user type", 400)
 
 
 def get_user_info(user_id, user_type):
@@ -157,13 +143,13 @@ def get_user_info(user_id, user_type):
         dict: User information
 
     Raises:
-        AuthenticationError: If user not found
+        APIError: If user not found
     """
     if user_type == 'customer':
         user_data = execute_query(GET_CUSTOMER_INFO, (user_id,), fetch_one=True)
 
         if not user_data:
-            raise AuthenticationError("User not found")
+            raise APIError("User not found", 404)
 
         result = {
             'email': user_data['email'],
@@ -189,7 +175,7 @@ def get_user_info(user_id, user_type):
         manager_data = execute_query(GET_MANAGER, (user_id,), fetch_one=True)
 
         if not manager_data:
-            raise AuthenticationError("Manager not found")
+            raise APIError("Manager not found", 404)
 
         return {
             'id_number': manager_data['id_number'],
@@ -199,4 +185,4 @@ def get_user_info(user_id, user_type):
         }
 
     else:
-        raise ValidationError("Invalid user type")
+        raise APIError("Invalid user type", 400)

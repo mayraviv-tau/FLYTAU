@@ -1,11 +1,12 @@
 """
 Authentication middleware for FLYTAU application.
 Provides decorators for route protection.
+Simplified to use APIError.
 """
 
 from functools import wraps
 from flask import session
-from .error_handlers import AuthenticationError, AuthorizationError
+from .error_handlers import APIError
 
 
 def login_required(f):
@@ -22,7 +23,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            raise AuthenticationError("Authentication required. Please log in.")
+            raise APIError("Authentication required. Please log in.", 401)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -41,10 +42,10 @@ def manager_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            raise AuthenticationError("Authentication required. Please log in.")
+            raise APIError("Authentication required. Please log in.", 401)
 
         if session.get('user_type') != 'manager':
-            raise AuthorizationError("Manager access required.")
+            raise APIError("Manager access required.", 403)
 
         return f(*args, **kwargs)
     return decorated_function

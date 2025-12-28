@@ -3,11 +3,10 @@ Authentication routes for FLYTAU application.
 Handles registration, login, logout, and user info.
 """
 
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, jsonify
 from ..services.auth_service import register_customer, login_user, get_user_info
 from ..middleware.auth import login_required, get_current_user
-from ..middleware.error_handlers import ValidationError
-from ..utils.responses import success_response, error_response
+from ..middleware.error_handlers import APIError
 
 bp = Blueprint('auth', __name__)
 
@@ -35,7 +34,7 @@ def register():
     data = request.get_json()
 
     if not data:
-        raise ValidationError("Request body is required")
+        raise APIError("Request body is required", 400)
 
     # Extract required fields
     email = data.get('email')
@@ -48,7 +47,7 @@ def register():
 
     # Validate required fields
     if not all([email, password, first_name, last_name, birth_date, passport_number]):
-        raise ValidationError("Missing required fields: email, password, first_name, last_name, birth_date, passport_number")
+        raise APIError("Missing required fields: email, password, first_name, last_name, birth_date, passport_number", 400)
 
     # Register customer
     customer = register_customer(
@@ -68,11 +67,11 @@ def register():
     session['last_name'] = customer.last_name
     session['is_registered'] = True
 
-    return success_response(
-        data=customer.to_dict(),
-        message="Customer registered successfully",
-        status_code=201
-    )
+    return jsonify({
+        'success': True,
+        'data': customer.to_dict(),
+        'message': "Customer registered successfully"
+    }), 201
 
 
 @bp.route('/login', methods=['POST'])
@@ -94,14 +93,14 @@ def login():
     data = request.get_json()
 
     if not data:
-        raise ValidationError("Request body is required")
+        raise APIError("Request body is required", 400)
 
     email_or_id = data.get('email') or data.get('id_number')
     password = data.get('password')
     user_type = data.get('user_type', 'customer')
 
     if not all([email_or_id, password]):
-        raise ValidationError("Email/ID and password are required")
+        raise APIError("Email/ID and password are required", 400)
 
     # Authenticate user
     user_data = login_user(email_or_id, password, user_type)
@@ -113,10 +112,11 @@ def login():
     session['last_name'] = user_data['last_name']
     session['is_registered'] = user_data.get('is_registered', True)
 
-    return success_response(
-        data=user_data,
-        message="Login successful"
-    )
+    return jsonify({
+        'success': True,
+        'data': user_data,
+        'message': "Login successful"
+    }), 200
 
 
 @bp.route('/logout', methods=['POST'])
@@ -130,7 +130,10 @@ def logout():
     """
     session.clear()
 
-    return success_response(message="Logout successful")
+    return jsonify({
+        'success': True,
+        'message': "Logout successful"
+    }), 200
 
 
 @bp.route('/me', methods=['GET'])
@@ -146,9 +149,12 @@ def get_current_user_info():
     current_user = get_current_user()
 
     if not current_user:
-        return error_response("Not authenticated", "AuthenticationError", 401)
+        raise APIError("Not authenticated", 401)
 
     # Get full user info from database
     user_info = get_user_info(current_user['user_id'], current_user['user_type'])
 
-    return success_response(data=user_info)
+    return jsonify({
+        'success': True,
+        'data': user_info
+    }), 200
