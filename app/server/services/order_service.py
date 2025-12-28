@@ -25,9 +25,17 @@ def get_user_orders(customer_email, filter_type=None):
     query = GET_USER_ORDERS
     params = [customer_email]
 
-    # Add filter for future flights
+    # Add filter for future flights - insert before ORDER BY
     if filter_type == 'future':
-        query += " AND f.departure_datetime > NOW() AND fo.order_status = 'Active'"
+        # Remove the ORDER BY clause temporarily
+        query = query.replace("ORDER BY fo.order_date DESC", "")
+        query += " AND f.departure_datetime > NOW()"
+        query += " ORDER BY fo.order_date DESC"
+    elif filter_type == 'history':
+        # Remove the ORDER BY clause temporarily
+        query = query.replace("ORDER BY fo.order_date DESC", "")
+        query += " AND f.departure_datetime <= NOW()"
+        query += " ORDER BY fo.order_date DESC"
 
     # Execute query
     results = execute_query(query, tuple(params), fetch_all=True)

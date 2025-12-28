@@ -1,0 +1,149 @@
+/* FLYTAU Table Styles */
+
+.flights-table,
+.orders-table,
+.report-table,
+.tickets-table {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-base);
+}
+
+thead {
+    background-color: var(--gray-100);
+}
+
+thead th {
+    padding: var(--spacing-md);
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-900);
+    border-bottom: 2px solid var(--gray-300);
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--gray-200);
+    transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+    background-color: var(--gray-100);
+}
+
+tbody tr:last-child {
+    border-bottom: none;
+}
+
+tbody td {
+    padding: var(--spacing-md);
+    color: var(--gray-700);
+}
+
+tbody td:last-child {
+    text-align: right;
+}
+
+/* Report Content */
+.report-content {
+    background-color: var(--white);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+.report-actions {
+    margin-top: var(--spacing-lg);
+}
+
+/* Reports Grid */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.report-card {
+    background-color: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.report-card h3 {
+    color: var(--primary-blue);
+    margin-bottom: var(--spacing-sm);
+}
+
+.report-card p {
+    color: var(--gray-500);
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-small);
+}
+
+/* Responsive Tables */
+@media (max-width: 768px) {
+    table {
+        font-size: var(--font-size-small);
+    }
+
+    thead th,
+    tbody td {
+        padding: var(--spacing-sm);
+    }
+
+    /* Stack table for very small screens */
+    @media (max-width: 480px) {
+        table, thead, tbody, th, td, tr {
+            display: block;
+        }
+
+        thead tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        tr {
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+        }
+
+        td {
+            border: none;
+            position: relative;
+            padding-left: 50%;
+            text-align: right;
+        }
+
+        td:before {
+            position: absolute;
+            left: var(--spacing-sm);
+            width: 45%;
+            padding-right: var(--spacing-sm);
+            white-space: nowrap;
+            text-align: left;
+            font-weight: 600;
+            content: attr(data-label);
+        }
+    }
+
+    .reports-grid {
+        grid-template-columns: 1fr;
+    }
+}

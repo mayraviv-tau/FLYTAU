@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Flight Details - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="flight-details-page">
+    <h1>Flight Details</h1>
+
+    <div class="flight-info-card">
+        <div class="flight-header">
+            <h2>{{ flight.origin_airport }} → {{ flight.destination_airport }}</h2>
+            <span class="status-badge status-{{ flight.status.lower() }}">{{ flight.status }}</span>
+        </div>
+
+        <div class="flight-info-grid">
+            <div class="info-item">
+                <strong>Flight ID:</strong> {{ flight.flight_id }}
+            </div>
+            <div class="info-item">
+                <strong>Departure:</strong> {{ flight.departure_datetime }}
+            </div>
+            <div class="info-item">
+                <strong>Duration:</strong> {{ flight.flight_duration }} hours
+            </div>
+            <div class="info-item">
+                <strong>Aircraft:</strong> {{ flight.manufacturer }} ({{ flight.size_category }})
+            </div>
+        </div>
+
+        <div class="seat-availability-summary">
+            <h3>Available Seats:</h3>
+            <div class="availability-grid">
+                {% for class_type, count in flight.available_seats.items() %}
+                <div class="availability-item">
+                    <strong>{{ class_type }}:</strong> {{ count }} seats
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('customer.book_flight', flight_id=flight.flight_id) }}"
+               class="btn btn-primary btn-large">Book This Flight</a>
+            <a href="{{ url_for('customer.flights') }}" class="btn btn-secondary">Back to Search</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

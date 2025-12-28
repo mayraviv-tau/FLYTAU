@@ -1,0 +1,38 @@
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+            <div class="logo">
+                <a href="{{ url_for('public.landing') }}">
+                    <h1 class="logo-text">FLYTAU</h1>
+                </a>
+            </div>
+
+            {% if session.get('user_id') %}
+            <nav class="navigation">
+                {% if session.get('user_type') == 'customer' %}
+                    <a href="{{ url_for('customer.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('customer.flights') }}" class="nav-link">Search Flights</a>
+                    <a href="{{ url_for('customer.orders') }}" class="nav-link">My Orders</a>
+                {% elif session.get('user_type') == 'manager' %}
+                    <a href="{{ url_for('manager.dashboard') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('manager.create_flight') }}" class="nav-link">Create Flight</a>
+                    <a href="{{ url_for('manager.manage_flights') }}" class="nav-link">Manage Flights</a>
+                    <a href="{{ url_for('manager.reports') }}" class="nav-link">Reports</a>
+                {% endif %}
+
+                <div class="user-menu">
+                    <span class="user-name">{{ session.get('first_name') }} {{ session.get('last_name') }}</span>
+                    <form method="POST" action="{{ url_for('public.logout') }}" class="logout-form">
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
+                </div>
+            </nav>
+            {% else %}
+            <nav class="navigation">
+                <a href="{{ url_for('public.login') }}" class="btn btn-secondary">Login</a>
+                <a href="{{ url_for('public.register') }}" class="btn btn-primary">Register</a>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</header>

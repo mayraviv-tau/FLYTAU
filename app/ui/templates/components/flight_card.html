@@ -1,0 +1,47 @@
+{# Macro for rendering flight card #}
+{% macro render_flight(flight) %}
+<div class="flight-card">
+    <div class="flight-route">
+        <div class="airport">
+            <span class="airport-code">{{ flight.origin_airport }}</span>
+        </div>
+        <div class="flight-arrow">→</div>
+        <div class="airport">
+            <span class="airport-code">{{ flight.destination_airport }}</span>
+        </div>
+    </div>
+
+    <div class="flight-details">
+        <div class="detail-item">
+            <strong>Departure:</strong><br>
+            {{ flight.departure_datetime }}
+        </div>
+        <div class="detail-item">
+            <strong>Duration:</strong><br>
+            {{ flight.flight_duration }} hours
+        </div>
+        <div class="detail-item">
+            <strong>Aircraft:</strong><br>
+            {{ flight.manufacturer }}
+        </div>
+        <div class="detail-item">
+            <strong>Status:</strong><br>
+            <span class="status-badge status-{{ flight.status.lower() }}">{{ flight.status }}</span>
+        </div>
+    </div>
+
+    {% if flight.available_seats %}
+    <div class="seat-availability">
+        <strong>Available Seats:</strong>
+        {% for class_type, count in flight.available_seats.items() %}
+        <span class="seat-count">{{ class_type }}: {{ count }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flight-actions">
+        <a href="{{ url_for('customer.flight_details', flight_id=flight.flight_id) }}"
+           class="btn btn-primary">View Details</a>
+    </div>
+</div>
+{% endmacro %}

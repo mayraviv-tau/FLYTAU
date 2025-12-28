@@ -41,8 +41,14 @@ def init_db_pool(config):
 
 def get_connection_pool():
     """Get the global connection pool."""
+    global _connection_pool
     if _connection_pool is None:
-        raise Exception("Database pool not initialized. Call init_db_pool() first.")
+        # Try to auto-initialize from Flask app context
+        try:
+            if current_app:
+                init_db_pool(current_app.config)
+        except:
+            raise Exception("Database pool not initialized. Call init_db_pool() first.")
     return _connection_pool
 
 

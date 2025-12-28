@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmed - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="confirmation-card">
+        <div class="confirmation-icon">✓</div>
+        <h1>Booking Confirmed!</h1>
+        <p class="confirmation-message">Your flight has been successfully booked.</p>
+
+        <div class="order-summary">
+            <h2>Order Details</h2>
+            <div class="summary-row">
+                <strong>Order ID:</strong> {{ order.order_id }}
+            </div>
+            <div class="summary-row">
+                <strong>Flight:</strong> {{ order.origin_airport }} → {{ order.destination_airport }}
+            </div>
+            <div class="summary-row">
+                <strong>Departure:</strong> {{ order.departure_datetime }}
+            </div>
+            <div class="summary-row">
+                <strong>Tickets:</strong> {{ order.tickets|length }}
+            </div>
+            <div class="summary-row total">
+                <strong>Total Paid:</strong> ${{ "%.2f"|format(order.total_payment) }}
+            </div>
+        </div>
+
+        <div class="tickets-list">
+            <h3>Your Tickets:</h3>
+            {% for ticket in order.tickets %}
+            <div class="ticket-item">
+                <span>Seat {{ ticket.seat_number }}</span>
+                <span>{{ ticket.class_type }}</span>
+                <span>${{ "%.2f"|format(ticket.price) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ url_for('customer.orders') }}" class="btn btn-primary">View My Orders</a>
+            <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

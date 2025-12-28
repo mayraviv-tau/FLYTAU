@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Error {{ status_code }} - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <h1 class="error-code">Error {{ status_code }}</h1>
+    <p>{{ error }}</p>
+    <div class="error-actions">
+        <a href="{{ url_for('public.landing') }}" class="btn btn-primary">Go Home</a>
+    </div>
+</div>
+{% endblock %}

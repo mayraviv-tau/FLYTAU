@@ -21,7 +21,9 @@ def create_app(config_name=None):
     Returns:
         Flask: Configured Flask application
     """
-    app = Flask(__name__)
+    app = Flask(__name__,
+                template_folder='../ui/templates',
+                static_folder='../ui/static')
 
     # Load configuration
     if config_name is None:
@@ -61,11 +63,25 @@ def register_blueprints(app):
     Args:
         app: Flask application
     """
+    # API blueprints
     from .routes import auth, flights, orders, admin_flights, admin_reports
 
-    # Register blueprints with URL prefix
     app.register_blueprint(auth.bp, url_prefix='/api/auth')
     app.register_blueprint(flights.bp, url_prefix='/api')
     app.register_blueprint(orders.bp, url_prefix='/api')
     app.register_blueprint(admin_flights.bp, url_prefix='/api/admin')
     app.register_blueprint(admin_reports.bp, url_prefix='/api/admin/reports')
+
+    # UI blueprints
+    import sys
+    import os
+    # Add parent directory to path for UI imports
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+
+    from ui.routes import public, customer, manager
+
+    app.register_blueprint(public.bp, url_prefix='')
+    app.register_blueprint(customer.bp, url_prefix='/customer')
+    app.register_blueprint(manager.bp, url_prefix='/manager')

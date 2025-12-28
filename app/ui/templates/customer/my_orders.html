@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="orders-page">
+    <h1>My Orders</h1>
+
+    <div class="filter-tabs">
+        <a href="{{ url_for('customer.orders', filter='future') }}"
+           class="tab {% if filter_type == 'future' %}active{% endif %}">Upcoming Flights</a>
+        <a href="{{ url_for('customer.orders', filter='history') }}"
+           class="tab {% if filter_type == 'history' %}active{% endif %}">Past Flights</a>
+    </div>
+
+    <div class="orders-list">
+        {% if orders %}
+            {% for order in orders %}
+            <div class="order-card-detailed">
+                <div class="order-header">
+                    <div>
+                        <h3>Order #{{ order.order_id }}</h3>
+                        <p class="order-route">{{ order.origin_airport }} → {{ order.destination_airport }}</p>
+                    </div>
+                    <span class="order-status status-{{ order.order_status.lower() }}">{{ order.order_status }}</span>
+                </div>
+
+                <div class="order-body">
+                    <div class="order-info-grid">
+                        <div class="info-item">
+                            <strong>Departure:</strong> {{ order.departure_datetime }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Tickets:</strong> {{ order.tickets|length }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Total:</strong> ${{ "%.2f"|format(order.total_payment) }}
+                        </div>
+                        <div class="info-item">
+                            <strong>Booked:</strong> {{ order.order_date }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-actions">
+                    <a href="{{ url_for('customer.order_details', order_id=order.order_id) }}"
+                       class="btn btn-secondary btn-small">View Details</a>
+                    {% if filter_type == 'future' and order.order_status == 'Confirmed' %}
+                    <form method="POST" action="{{ url_for('customer.cancel_order_route', order_id=order.order_id) }}"
+                          style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-small"
+                                onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>No {{ 'upcoming' if filter_type == 'future' else 'past' }} orders found.</p>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn btn-primary">Search Flights</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

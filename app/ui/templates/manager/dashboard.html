@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Dashboard - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="manager-dashboard">
+    <h1>Manager Dashboard</h1>
+    <p class="welcome-message">Welcome, {{ user.first_name }} {{ user.last_name }}</p>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3>Flight Management</h3>
+            <p>Create and manage flights</p>
+            <div class="card-actions">
+                <a href="{{ url_for('manager.create_flight') }}" class="btn btn-primary">Create Flight</a>
+                <a href="{{ url_for('manager.manage_flights') }}" class="btn btn-secondary">Manage Flights</a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <h3>Business Reports</h3>
+            <p>View analytics and insights</p>
+            <div class="card-actions">
+                <a href="{{ url_for('manager.reports') }}" class="btn btn-primary">View Reports</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

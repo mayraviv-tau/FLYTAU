@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% from 'components/flight_card.html' import render_flight %}
+
+{% block title %}Search Flights - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <h1>Available Flights</h1>
+
+    <div class="search-filters">
+        <form method="GET" action="{{ url_for('customer.flights') }}" class="search-form compact">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" id="date" name="date" class="form-input"
+                           value="{{ search_params.date if search_params.date else '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="origin" class="form-label">From</label>
+                    <input type="text" id="origin" name="origin" class="form-input"
+                           value="{{ search_params.origin if search_params.origin else '' }}" placeholder="TLV">
+                </div>
+                <div class="form-group">
+                    <label for="destination" class="form-label">To</label>
+                    <input type="text" id="destination" name="destination" class="form-input"
+                           value="{{ search_params.destination if search_params.destination else '' }}" placeholder="JFK">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="flights-list">
+        {% if flights %}
+            {% for flight in flights %}
+                {{ render_flight(flight) }}
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>No flights found matching your criteria.</p>
+                <a href="{{ url_for('customer.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

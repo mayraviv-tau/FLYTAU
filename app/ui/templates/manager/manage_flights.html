@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Flights - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="manage-flights-page">
+    <h1>Manage Flights</h1>
+
+    <div class="page-actions">
+        <a href="{{ url_for('manager.create_flight') }}" class="btn btn-primary">Create New Flight</a>
+    </div>
+
+    <div class="flights-table">
+        {% if flights %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Flight ID</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Aircraft</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for flight in flights %}
+                <tr>
+                    <td>{{ flight.flight_id }}</td>
+                    <td>{{ flight.origin_airport }} → {{ flight.destination_airport }}</td>
+                    <td>{{ flight.departure_datetime }}</td>
+                    <td>{{ flight.manufacturer }}</td>
+                    <td><span class="status-badge status-{{ flight.status.lower() }}">{{ flight.status }}</span></td>
+                    <td>
+                        {% if flight.status == 'Scheduled' %}
+                        <form method="POST" action="{{ url_for('manager.cancel_flight', flight_id=flight.flight_id) }}"
+                              style="display: inline;">
+                            <button type="submit" class="btn btn-danger btn-small"
+                                    onclick="return confirm('Are you sure you want to cancel this flight? All orders will be refunded.')">
+                                Cancel Flight
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No flights found.</p>
+            <a href="{{ url_for('manager.create_flight') }}" class="btn btn-primary">Create First Flight</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

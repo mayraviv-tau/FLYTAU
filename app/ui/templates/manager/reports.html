@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Reports - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="reports-page">
+    <h1>Business Reports</h1>
+
+    <div class="reports-grid">
+        <div class="report-card">
+            <h3>Flight Occupancy</h3>
+            <p>View seat occupancy rates across all flights</p>
+            <a href="{{ url_for('manager.report_occupancy') }}" class="btn btn-primary">View Report</a>
+        </div>
+
+        <div class="report-card">
+            <h3>Revenue Analysis</h3>
+            <p>Analyze revenue trends and performance</p>
+            <a href="{{ url_for('manager.report_revenue') }}" class="btn btn-primary">View Report</a>
+        </div>
+
+        <div class="report-card">
+            <h3>Staff Working Hours</h3>
+            <p>Track crew working hours and assignments</p>
+            <a href="{{ url_for('manager.report_staff_hours') }}" class="btn btn-primary">View Report</a>
+        </div>
+
+        <div class="report-card">
+            <h3>Cancellation Statistics</h3>
+            <p>Monitor order cancellation patterns</p>
+            <a href="{{ url_for('manager.report_cancellations') }}" class="btn btn-primary">View Report</a>
+        </div>
+
+        <div class="report-card">
+            <h3>Plane Activity</h3>
+            <p>Review aircraft utilization metrics</p>
+            <a href="{{ url_for('manager.report_plane_activity') }}" class="btn btn-primary">View Report</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
