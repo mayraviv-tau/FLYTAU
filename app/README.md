@@ -1,6 +1,10 @@
 # FLYTAU Flask Server
 
-REST API server for the FLYTAU flight booking system.
+REST API server for the FLYTAU flight booking system. This is an academic exercise implementing a flight booking management system.
+
+## Overview
+
+This server implements a complete REST API for managing flights, bookings, orders, and administrative reports. It has been simplified for academic purposes with plain text password storage and straightforward error handling.
 
 ## Quick Start
 
@@ -23,6 +27,9 @@ DB_USER=root
 DB_PASSWORD=your_password
 
 SECRET_KEY=your_secret_key_here
+FLASK_ENV=development
+FLASK_DEBUG=True
+SESSION_TYPE=filesystem
 ```
 
 ### 3. Set Up Database
@@ -39,7 +46,7 @@ cd app/server
 python main.py
 ```
 
-Server will start at `http://localhost:5000`
+Server will start at `http://localhost:5001` (Note: Port 5000 may conflict with AirPlay on macOS)
 
 ## API Endpoints
 
@@ -105,42 +112,44 @@ server/
 
 ## Features
 
-✅ Session-based authentication
-✅ Customer registration and login
-✅ Manager authentication
-✅ Flight search with filters
-✅ Seat availability checking
-✅ Booking creation with balance deduction
-✅ Order management and cancellation
-✅ Flight creation and cancellation (admin)
-✅ Administrative reports (5 reports)
-✅ Comprehensive test coverage
-✅ Transaction safety for critical operations
-✅ Input validation and error handling
+- Session-based authentication with Flask-Session
+- Customer registration and login
+- Manager authentication with role-based access control
+- Flight search with date, origin, and destination filters
+- Real-time seat availability checking
+- Booking creation with automatic balance deduction
+- Order management and cancellation with refund processing
+- Administrative flight creation and cancellation
+- Five comprehensive administrative reports
+- Database transaction safety for critical operations
+- Input validation and error handling
+- Test suite for all endpoints
 
 ## Technology Stack
 
-- Flask 3.0.0
+- Flask 3.1.0
 - MySQL 8.0+
-- mysql-connector-python 8.2.0
-- bcrypt 4.1.2
-- pytest 7.4.3
-- Flask-Session 0.5.0
+- mysql-connector-python 9.4.0
+- pytest and pytest-flask for testing
+- Flask-Session 0.8.0 for session management
+- Python 3.10+
 
-## Security
+## Academic Simplifications
 
-- Bcrypt password hashing
-- Session-based authentication
-- Role-based access control
-- SQL injection prevention
-- Input validation
+This implementation has been simplified for academic purposes:
+
+- **Plain text passwords**: Passwords are stored in plain text for easier testing and grading. NOT suitable for production use.
+- **Simplified validation**: Basic email and password validation instead of complex regex patterns.
+- **Unified error handling**: Single APIError exception class with status codes instead of multiple error types.
+- **Direct JSON responses**: Uses Flask's jsonify() directly without wrapper functions.
+
+These simplifications maintain all required functionality while making the code easier to understand and grade.
 
 ## Sample Credentials
 
 **Managers (from seed data):**
-- ID: 200000001, Password: manager123
-- ID: 200000002, Password: manager456
+- ID: 100000001, Password: pass123
+- ID: 100000002, Password: pass456
 
-**Customers (from seed data):**
-- alice.thompson@gmail.com (balance: $1500)
-- michael.chen@yahoo.com (balance: $200)
+**Test Customer:**
+- Email: testuser@example.com, Password: test123 (created during testing)
