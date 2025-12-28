@@ -63,7 +63,8 @@ def create_booking_route():
     order = create_booking(
         customer_email=current_user['user_id'],
         flight_id=flight_id,
-        tickets=tickets
+        tickets=tickets,
+        user_type=current_user['user_type']
     )
 
     return jsonify({

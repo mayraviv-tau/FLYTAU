@@ -52,6 +52,11 @@
                     <label class="checkbox-label">
                         <input type="checkbox" name="pilot_ids" value="{{ pilot.id_number }}">
                         {{ pilot.first_name_hebrew }} {{ pilot.last_name_hebrew }} (ID: {{ pilot.id_number }})
+                        {% if pilot.is_long_haul_qualified %}
+                        <span style="color: green; font-size: 0.9em;">✓ Long-haul</span>
+                        {% else %}
+                        <span style="color: orange; font-size: 0.9em;">⚠ Short-haul only</span>
+                        {% endif %}
                     </label>
                     {% endfor %}
                 </div>
@@ -64,6 +69,11 @@
                     <label class="checkbox-label">
                         <input type="checkbox" name="attendant_ids" value="{{ attendant.id_number }}">
                         {{ attendant.first_name_hebrew }} {{ attendant.last_name_hebrew }} (ID: {{ attendant.id_number }})
+                        {% if attendant.is_long_haul_qualified %}
+                        <span style="color: green; font-size: 0.9em;">✓ Long-haul</span>
+                        {% else %}
+                        <span style="color: orange; font-size: 0.9em;">⚠ Short-haul only</span>
+                        {% endif %}
                     </label>
                     {% endfor %}
                 </div>

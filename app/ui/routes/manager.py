@@ -49,10 +49,82 @@ def create_flight():
 
             # We'll manually call the database operations
             with get_db_connection() as conn:
-                cursor = conn.cursor()
+                cursor = conn.cursor(dictionary=True)
 
                 try:
-                    # Insert flight
+                    # 1. Get flight duration from FlightLine
+                    cursor.execute("""
+                        SELECT flight_duration FROM FlightLine
+                        WHERE origin_airport = %s AND destination_airport = %s
+                    """, (flight_data['origin_airport'], flight_data['destination_airport']))
+
+                    flight_line = cursor.fetchone()
+                    if not flight_line:
+                        raise APIError(f"No flight route exists from {flight_data['origin_airport']} to {flight_data['destination_airport']}", 400)
+
+                    flight_duration = float(flight_line['flight_duration'])
+                    is_long_haul = flight_duration > 6
+
+                    # 2. Get plane details and validate compatibility
+                    cursor.execute("""
+                        SELECT plane_id, size_category FROM Plane WHERE plane_id = %s
+                    """, (flight_data['plane_id'],))
+
+                    plane = cursor.fetchone()
+                    if not plane:
+                        raise APIError(f"Aircraft {flight_data['plane_id']} not found", 400)
+
+                    # Validate: Small aircraft can only do short flights
+                    if plane['size_category'] == 'Small' and is_long_haul:
+                        raise APIError(f"Small aircraft cannot be assigned to long-haul flights (>{flight_duration}h)", 400)
+
+                    # 3. Determine required crew counts based on aircraft size
+                    if plane['size_category'] == 'Large':
+                        required_pilots = 3
+                        required_attendants = 6
+                    else:  # Small
+                        required_pilots = 2
+                        required_attendants = 3
+
+                    # 4. Validate crew counts
+                    pilot_count = len([p for p in flight_data['pilot_ids'] if p])
+                    attendant_count = len([a for a in flight_data['attendant_ids'] if a])
+
+                    if pilot_count < required_pilots:
+                        raise APIError(f"Insufficient pilots: {pilot_count}/{required_pilots} required for {plane['size_category']} aircraft", 400)
+
+                    if attendant_count < required_attendants:
+                        raise APIError(f"Insufficient flight attendants: {attendant_count}/{required_attendants} required for {plane['size_category']} aircraft", 400)
+
+                    # 5. Validate pilot qualifications for long-haul flights
+                    if is_long_haul and flight_data['pilot_ids']:
+                        placeholders = ','.join(['%s'] * len([p for p in flight_data['pilot_ids'] if p]))
+                        cursor.execute(f"""
+                            SELECT id_number FROM Pilot
+                            WHERE id_number IN ({placeholders})
+                            AND is_long_haul_qualified = FALSE
+                        """, tuple(p for p in flight_data['pilot_ids'] if p))
+
+                        unqualified_pilots = cursor.fetchall()
+                        if unqualified_pilots:
+                            unqualified_ids = [p['id_number'] for p in unqualified_pilots]
+                            raise APIError(f"Pilots {', '.join(unqualified_ids)} are not qualified for long-haul flights", 400)
+
+                    # 6. Validate flight attendant qualifications for long-haul flights
+                    if is_long_haul and flight_data['attendant_ids']:
+                        placeholders = ','.join(['%s'] * len([a for a in flight_data['attendant_ids'] if a]))
+                        cursor.execute(f"""
+                            SELECT id_number FROM FlightAttendant
+                            WHERE id_number IN ({placeholders})
+                            AND is_long_haul_qualified = FALSE
+                        """, tuple(a for a in flight_data['attendant_ids'] if a))
+
+                        unqualified_attendants = cursor.fetchall()
+                        if unqualified_attendants:
+                            unqualified_ids = [a['id_number'] for a in unqualified_attendants]
+                            raise APIError(f"Flight attendants {', '.join(unqualified_ids)} are not qualified for long-haul flights", 400)
+
+                    # 7. Insert flight
                     cursor.execute("""
                         INSERT INTO Flight (origin_airport, destination_airport, plane_id,
                                           departure_datetime, status, manager_id)
@@ -67,7 +139,7 @@ def create_flight():
 
                     flight_id = cursor.lastrowid
 
-                    # Assign pilots
+                    # 8. Assign pilots
                     for pilot_id in flight_data['pilot_ids']:
                         if pilot_id:
                             cursor.execute("""
@@ -75,7 +147,7 @@ def create_flight():
                                 VALUES (%s, %s)
                             """, (flight_id, pilot_id))
 
-                    # Assign attendants
+                    # 9. Assign attendants
                     for attendant_id in flight_data['attendant_ids']:
                         if attendant_id:
                             cursor.execute("""
@@ -84,11 +156,13 @@ def create_flight():
                             """, (flight_id, attendant_id))
 
                     conn.commit()
-                    flash(f'Flight {flight_id} created successfully!', 'success')
+                    flash(f'Flight {flight_id} created successfully! Duration: {flight_duration}h ({("Long-haul" if is_long_haul else "Short-haul")})', 'success')
                     return redirect(url_for('manager.manage_flights'))
 
                 except Exception as e:
                     conn.rollback()
+                    if isinstance(e, APIError):
+                        raise
                     raise APIError(f'Failed to create flight: {str(e)}', 500)
                 finally:
                     cursor.close()
@@ -105,12 +179,12 @@ def create_flight():
             cursor.execute("SELECT plane_id, manufacturer, size_category FROM Plane")
             planes = cursor.fetchall()
 
-            # Get available pilots
-            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew FROM Pilot")
+            # Get available pilots with qualification status
+            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew, is_long_haul_qualified FROM Pilot")
             pilots = cursor.fetchall()
 
-            # Get available attendants
-            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew FROM FlightAttendant")
+            # Get available attendants with qualification status
+            cursor.execute("SELECT id_number, first_name_hebrew, last_name_hebrew, is_long_haul_qualified FROM FlightAttendant")
             attendants = cursor.fetchall()
 
             cursor.close()

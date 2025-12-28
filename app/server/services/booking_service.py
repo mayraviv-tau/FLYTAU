@@ -3,14 +3,49 @@ Booking service for FLYTAU application.
 Handles ticket booking and flight status updates.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..db import execute_query, execute_transaction
 from ..db.queries import *
 from ..middleware.error_handlers import APIError
 from ..services.flight_service import check_seat_availability, get_available_seats
 
 
-def create_booking(customer_email, flight_id, tickets):
+def update_completed_flights():
+    """
+    Update flights to 'Landed' status if they have passed their landing time.
+    Landing time = departure_datetime + flight_duration.
+
+    This function should be called periodically (e.g., via a cron job or scheduler).
+    """
+    # Get all Active or Full flights with their duration
+    query = """
+        SELECT f.flight_id, f.departure_datetime, fl.flight_duration, f.status
+        FROM Flight f
+        JOIN FlightLine fl ON f.origin_airport = fl.origin_airport
+                           AND f.destination_airport = fl.destination_airport
+        WHERE f.status IN ('Active', 'Full')
+    """
+
+    flights = execute_query(query, fetch_all=True)
+    updated_count = 0
+
+    for flight in flights:
+        departure = flight['departure_datetime']
+        if isinstance(departure, str):
+            departure = datetime.strptime(departure, '%Y-%m-%d %H:%M:%S')
+
+        duration_hours = float(flight['flight_duration'])
+        landing_time = departure + timedelta(hours=duration_hours)
+
+        # If current time is past landing time, mark as Landed
+        if datetime.now() >= landing_time:
+            execute_query(UPDATE_FLIGHT_STATUS, ('Landed', flight['flight_id']), commit=True)
+            updated_count += 1
+
+    return updated_count
+
+
+def create_booking(customer_email, flight_id, tickets, user_type='customer'):
     """
     Create a new booking with tickets.
 
@@ -18,6 +53,7 @@ def create_booking(customer_email, flight_id, tickets):
         customer_email (str): Customer email
         flight_id (int): Flight ID
         tickets (list): List of ticket dicts with class_type, seat_number, price
+        user_type (str): Type of user ('customer', 'manager') - managers cannot purchase
 
     Returns:
         dict: Created order information
@@ -25,6 +61,10 @@ def create_booking(customer_email, flight_id, tickets):
     Raises:
         APIError: If validation fails or flight not found
     """
+    # Managers cannot purchase tickets
+    if user_type == 'manager':
+        raise APIError("Managers are not authorized to purchase tickets", 403)
+
     # Get flight details
     flight = execute_query(GET_FLIGHT, (flight_id,), fetch_one=True)
 
