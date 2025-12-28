@@ -1,5 +1,6 @@
 """
 Global error handlers for FLYTAU application.
+Simplified for academic exercise.
 """
 
 from flask import jsonify
@@ -7,39 +8,22 @@ from mysql.connector import Error as MySQLError
 
 
 class APIError(Exception):
-    """Base API error class."""
-    status_code = 400
+    """
+    Base API error class.
+    Use with different status codes instead of subclassing.
 
-    def __init__(self, message, status_code=None):
+    Usage:
+        raise APIError("Invalid email", 400)
+        raise APIError("Not authenticated", 401)
+        raise APIError("Not authorized", 403)
+        raise APIError("Not found", 404)
+        raise APIError("Server error", 500)
+    """
+
+    def __init__(self, message, status_code=400):
         super().__init__()
         self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-
-
-class AuthenticationError(APIError):
-    """Authentication failed error."""
-    status_code = 401
-
-
-class AuthorizationError(APIError):
-    """Authorization/permission error."""
-    status_code = 403
-
-
-class NotFoundError(APIError):
-    """Resource not found error."""
-    status_code = 404
-
-
-class ValidationError(APIError):
-    """Input validation error."""
-    status_code = 400
-
-
-class DatabaseError(APIError):
-    """Database operation error."""
-    status_code = 500
+        self.status_code = status_code
 
 
 def register_error_handlers(app):
@@ -55,20 +39,19 @@ def register_error_handlers(app):
         """Handle custom API errors."""
         response = {
             'success': False,
-            'error': error.__class__.__name__,
+            'error': 'APIError',
             'message': error.message
         }
         return jsonify(response), error.status_code
 
     @app.errorhandler(MySQLError)
     def handle_mysql_error(error):
-        """Handle MySQL errors."""
+        """Handle MySQL errors - show actual error for easier debugging."""
         response = {
             'success': False,
             'error': 'DatabaseError',
-            'message': 'Database operation failed'
+            'message': f'Database error: {str(error)}'  # Show actual error for academic demo
         }
-        # Log the actual error for debugging
         app.logger.error(f"MySQL Error: {error}")
         return jsonify(response), 500
 
@@ -88,7 +71,7 @@ def register_error_handlers(app):
         response = {
             'success': False,
             'error': 'InternalServerError',
-            'message': 'Internal server error'
+            'message': f'Internal server error: {str(error)}'  # Show error for debugging
         }
         app.logger.error(f"Internal Error: {error}")
         return jsonify(response), 500
