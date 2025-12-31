@@ -1,0 +1,28 @@
+"""
+Configuration file for FLYTAU Flask application
+Copy this file to config.py and update with your database credentials
+"""
+import os
+
+class Config:
+    """Base configuration"""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    
+    # Database configuration
+    # IMPORTANT: Update these values with your MySQL credentials
+    DB_HOST = os.environ.get('DB_HOST') or 'localhost'
+    DB_USER = os.environ.get('DB_USER') or 'root'
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'YOUR_MYSQL_PASSWORD_HERE'  # Change this!
+    DB_NAME = os.environ.get('DB_NAME') or 'flytau'
+    DB_PORT = int(os.environ.get('DB_PORT') or 3306)
+    
+    # Session configuration
+    SESSION_TYPE = 'filesystem'
+    SESSION_PERMANENT = False
+    
+    # Application settings
+    DEBUG = True
+
+
+
+

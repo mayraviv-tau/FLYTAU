@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}פרטי הזמנה #{{ order.order_id }} - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="order-details-container">
+    <h1>פרטי הזמנה #{{ order.order_id }}</h1>
+    
+    <div class="order-info">
+        <h2>פרטי הזמנה</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>סטטוס:</strong>
+                <span class="status-{{ order.order_status.lower().replace('_', '-') }}">
+                    {{ order.order_status }}
+                </span>
+            </div>
+            <div class="info-item">
+                <strong>תאריך הזמנה:</strong> {{ order.order_date.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="info-item">
+                <strong>סכום כולל:</strong> {{ order.total_payment }} ₪
+            </div>
+            <div class="info-item">
+                <strong>לקוח:</strong> {{ order.first_name_english }} {{ order.last_name_english }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="flight-info">
+        <h2>פרטי טיסה</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>מסלול:</strong> {{ order.origin_airport }} → {{ order.destination_airport }}
+            </div>
+            <div class="info-item">
+                <strong>תאריך ושעה:</strong> {{ order.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="info-item">
+                <strong>סטטוס טיסה:</strong> {{ order.flight_status }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="tickets-info">
+        <h2>כרטיסים ({{ tickets|length }})</h2>
+        <table class="tickets-table">
+            <thead>
+                <tr>
+                    <th>מחלקה</th>
+                    <th>מושב</th>
+                    <th>מחיר</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ ticket.class_type }}</td>
+                        <td>{{ ticket.seat_number }}</td>
+                        <td>{{ ticket.price }} ₪</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="order-actions">
+        {% if order.order_status == 'Active' %}
+            <form method="POST" action="{{ url_for('orders.cancel', order_id=order.order_id) }}" 
+                  onsubmit="return confirm('האם אתה בטוח שברצונך לבטל הזמנה זו? דמי ביטול: 5% מהמחיר המקורי');">
+                <button type="submit" class="btn-danger">בטל הזמנה</button>
+            </form>
+        {% endif %}
+        <a href="{{ url_for('orders.list') }}" class="btn-secondary">חזרה לרשימת הזמנות</a>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

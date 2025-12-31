@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}יצירת טיסה חדשה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>יצירת טיסה חדשה</h1>
+    
+    <form method="POST" action="{{ url_for('flights.create') }}" class="main-form">
+        <div class="form-group">
+            <label for="origin_airport">שדה תעופה מקור *</label>
+            <select id="origin_airport" name="origin_airport" required>
+                <option value="">בחר שדה תעופה</option>
+                {% for flightline in flightlines %}
+                    <option value="{{ flightline.origin_airport }}">{{ flightline.origin_airport }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="destination_airport">שדה תעופה יעד *</label>
+            <select id="destination_airport" name="destination_airport" required>
+                <option value="">בחר שדה תעופה</option>
+                {% for flightline in flightlines %}
+                    <option value="{{ flightline.destination_airport }}">{{ flightline.destination_airport }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="plane_id">מטוס *</label>
+            <select id="plane_id" name="plane_id" required>
+                <option value="">בחר מטוס</option>
+                {% for plane in planes %}
+                    <option value="{{ plane.plane_id }}">
+                        מטוס {{ plane.plane_id }} - {{ plane.manufacturer }} ({{ plane.size_category }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="departure_datetime">תאריך ושעת המראה *</label>
+            <input type="datetime-local" id="departure_datetime" name="departure_datetime" required>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">צור טיסה</button>
+            <a href="{{ url_for('flights.list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FLYTAU - מערכת ניהול טיסות{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('flights.search') }}" class="logo">FLYTAU</a>
+            <ul class="nav-menu">
+                {% if session.user_email or session.manager_id %}
+                    {% if session.manager_id %}
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle">ניהול</a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{{ url_for('managers.planes_list') }}">מטוסים</a></li>
+                                <li><a href="{{ url_for('managers.pilots_list') }}">טייסים</a></li>
+                                <li><a href="{{ url_for('managers.attendants_list') }}">דיילים</a></li>
+                                <li><a href="{{ url_for('flights.list') }}">טיסות</a></li>
+                                <li><a href="{{ url_for('reports.index') }}">דוחות</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li><a href="{{ url_for('flights.search') }}">חיפוש טיסות</a></li>
+                        <li><a href="{{ url_for('orders.list') }}">ההזמנות שלי</a></li>
+                        <li><a href="{{ url_for('orders.history') }}">היסטוריית רכישות</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.logout_user') }}">התנתק</a></li>
+                    {% if session.user_email %}
+                        <li><span class="user-info">שלום, {{ session.user_email }}</span></li>
+                    {% elif session.manager_id %}
+                        <li><span class="user-info">מנהל: {{ session.manager_id }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}">התחבר</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">הרשם</a></li>
+                    <li><a href="{{ url_for('auth.manager_login') }}">התחבר כמנהל</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 FLYTAU - מערכת ניהול טיסות</p>
+        </div>
+    </footer>
+</body>
+</html>
+
+
+
+

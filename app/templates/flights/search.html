@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}חיפוש טיסות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="flights-container">
+    <h1>חיפוש טיסות</h1>
+    
+    <form method="POST" action="{{ url_for('flights.search') }}" class="search-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="origin_airport">שדה תעופה מקור</label>
+                <select id="origin_airport" name="origin_airport">
+                    <option value="">בחר שדה תעופה</option>
+                    {% for airport in airports %}
+                        <option value="{{ airport.airport }}" {% if origin == airport.airport %}selected{% endif %}>
+                            {{ airport.airport }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="destination_airport">שדה תעופה יעד</label>
+                <select id="destination_airport" name="destination_airport">
+                    <option value="">בחר שדה תעופה</option>
+                    {% for airport in airports %}
+                        <option value="{{ airport.airport }}" {% if destination == airport.airport %}selected{% endif %}>
+                            {{ airport.airport }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="departure_date">תאריך יציאה</label>
+                <input type="date" id="departure_date" name="departure_date" value="{{ departure_date or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn-primary">חפש טיסות</button>
+            </div>
+        </div>
+    </form>
+    
+    {% if flights %}
+        <h2>תוצאות חיפוש ({{ flights|length }} טיסות נמצאו)</h2>
+        <div class="flights-list">
+            {% for flight in flights %}
+                <div class="flight-card">
+                    <div class="flight-header">
+                        <span class="flight-route">{{ flight.origin_airport }} → {{ flight.destination_airport }}</span>
+                        <span class="flight-status status-{{ flight.status.lower() }}">{{ flight.status }}</span>
+                    </div>
+                    <div class="flight-details">
+                        <div class="detail-item">
+                            <strong>תאריך ושעה:</strong> {{ flight.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>משך טיסה:</strong> {{ flight.flight_duration }} שעות
+                        </div>
+                        <div class="detail-item">
+                            <strong>מטוס:</strong> {{ flight.manufacturer }} ({{ flight.size_category }})
+                        </div>
+                        <div class="detail-item">
+                            <strong>מספר טיסה:</strong> {{ flight.flight_id }}
+                        </div>
+                    </div>
+                    <div class="flight-actions">
+                        <a href="{{ url_for('flights.seats', flight_id=flight.flight_id) }}" class="btn-primary">
+                            בחר מושבים
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif request.method == 'POST' %}
+        <p class="no-results">לא נמצאו טיסות תואמות לחיפוש שלך</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+
