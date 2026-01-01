@@ -127,12 +127,15 @@ CREATE TABLE FlightOrder (
 
 -- כרטיס טיסה
 CREATE TABLE Ticket (
-    order_id INT NOT NULL, -- קוד הזמנה(F)
-    plane_id INT NOT NULL, -- מזהה מטוס(F)
-    class_type ENUM('Economy', 'Business') NOT NULL, -- סוג מחלקה(F)
-    seat_number VARCHAR(10) NOT NULL, -- מספר מושב(F)
+    ticket_id INT AUTO_INCREMENT PRIMARY KEY,
+    flight_id INT NOT NULL, -- מזהה טיסה
+    order_id INT NOT NULL, -- קוד הזמנה
+	plane_id INT NOT NULL, -- מזהה מטוס
+    class_type ENUM('Economy', 'Business') NOT NULL, -- סוג מחלקה
+    seat_number VARCHAR(10) NOT NULL, -- מספר מושב
     price DECIMAL(10, 2) NOT NULL, -- מחיר
-    PRIMARY KEY (order_id, plane_id, class_type, seat_number),
+    UNIQUE (flight_id, seat_number),
+    FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE,
     FOREIGN KEY (order_id) REFERENCES FlightOrder(order_id) ON DELETE CASCADE,
     FOREIGN KEY (plane_id, class_type, seat_number) 
         REFERENCES Seat(plane_id, class_type, seat_number)
