@@ -1,10 +1,3 @@
-/*
-  REPORT 4: Monthly Client Cancellation Rate
-  -------------------------------------------------------
-  Objective: Monitor the percentage of orders canceled BY THE CLIENT per month.
-  Return: Month, Cancellation Rate.
-*/
-
 SELECT 
     DATE_FORMAT(order_date, '%Y-%m') AS month_year,
     
