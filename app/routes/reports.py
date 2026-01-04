@@ -133,3 +133,7 @@ def plane_activity():
         flash(f'שגיאה בטעינת הדוח: {str(e)}', 'error')
         return redirect(url_for('reports.index'))
 
+@bp.route("/debug-session")
+def debug_session():
+    from flask import session
+    return f"Session: {dict(session)}, is_manager: {is_manager()}"

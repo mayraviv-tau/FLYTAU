@@ -1,10 +1,18 @@
 {% extends "base.html" %}
-
 {% block title %}היסטוריית רכישות - FLYTAU{% endblock %}
 
 {% block content %}
 <div class="orders-container">
     <h1>היסטוריית רכישות</h1>
+    
+    <div class="filter-section">
+        <span>סינון לפי סטטוס:</span>
+        <a href="{{ url_for('orders.history') }}" class="btn-filter {% if not current_status %}active{% endif %}">הכל</a>
+        <a href="{{ url_for('orders.history', status='Active') }}" class="btn-filter {% if current_status == 'Active' %}active{% endif %}">פעילה</a>
+        <a href="{{ url_for('orders.history', status='Completed') }}" class="btn-filter {% if current_status == 'Completed' %}active{% endif %}">בוצעה</a>
+        <a href="{{ url_for('orders.history', status='Canceled_By_Client') }}" class="btn-filter {% if current_status == 'Canceled_By_Client' %}active{% endif %}">ביטול לקוח</a>
+        <a href="{{ url_for('orders.history', status='Canceled_By_Company') }}" class="btn-filter {% if current_status == 'Canceled_By_Company' %}active{% endif %}">ביטול מערכת</a>
+    </div>
     
     {% if orders %}
         <div class="orders-list">
@@ -47,7 +55,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
-
-
-
