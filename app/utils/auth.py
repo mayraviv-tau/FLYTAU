@@ -46,26 +46,26 @@ def logout():
 def verify_customer(email, password):
     """Verify customer credentials"""
     query = """
-        SELECT email, account_password 
-        FROM RegisteredCustomer 
+        SELECT email, account_password
+        FROM RegisteredCustomer
         WHERE email = %s
     """
     user = execute_query(query, (email,), fetch_one=True)
-    
-    if user and verify_password_hash(user['account_password'], password):
+
+    if user and user['account_password'] == password:
         return True
     return False
 
 def verify_manager(manager_id, password):
     """Verify manager credentials"""
     query = """
-        SELECT id_number, account_password 
-        FROM Manager 
+        SELECT id_number, account_password
+        FROM Manager
         WHERE id_number = %s
     """
     manager = execute_query(query, (manager_id,), fetch_one=True)
-    
-    if manager and verify_password_hash(manager['account_password'], password):
+
+    if manager and manager['account_password'] == password:
         return True
     return False
 
