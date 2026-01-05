@@ -129,7 +129,7 @@ VALUES (102, 4, 3, 'Economy', '12A', 900);
 
 -- Order 5: Jan 2026 (Active)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
-VALUES (5, 'c1@test.com', 103, '2026-01-10 10:00:00', 'Completed', 200);
+VALUES (5, 'c1@test.com', 103, '2026-01-10 10:00:00', 'Active', 200);
 INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
 VALUES (103, 5, 4, 'Economy', '1A', 200);
 

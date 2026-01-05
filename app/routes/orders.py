@@ -148,11 +148,20 @@ def list():
         LEFT JOIN Ticket t ON fo.order_id = t.order_id
         WHERE fo.customer_email = %s
         GROUP BY fo.order_id
-        ORDER BY fo.order_date DESC
+        ORDER BY fo.order_date ASC
     """
     orders = execute_query(query, (customer_email,), fetch_all=True)
+    
+    # Add per-customer order number (chronological, starting from 1)
+    # Order 1 = oldest order, Order 2 = second oldest, etc.
+    for idx, order in enumerate(orders, start=1):
+        order['customer_order_number'] = idx
+    
+    # Reverse to show newest first (but numbers remain chronological)
+    orders_list = list(orders)
+    orders_list.reverse()
 
-    return render_template('orders/list.html', orders=orders)
+    return render_template('orders/list.html', orders=orders_list)
 
 @bp.route('/<int:order_id>')
 def details(order_id):
@@ -177,6 +186,19 @@ def details(order_id):
     if not order:
         flash('הזמנה לא נמצאה', 'error')
         return redirect(url_for('orders.list'))
+
+    # Calculate per-customer order number (chronological)
+    # Count orders that come before this one (by date, then by ID)
+    order_number_query = """
+        SELECT COUNT(*) + 1 AS customer_order_number
+        FROM FlightOrder
+        WHERE customer_email = %s 
+          AND (order_date < %s OR (order_date = %s AND order_id <= %s))
+    """
+    order_number_result = execute_query(order_number_query, 
+                                        (customer_email, order['order_date'], order['order_date'], order_id), 
+                                        fetch_one=True)
+    order['customer_order_number'] = order_number_result['customer_order_number'] if order_number_result else 1
 
     # Get tickets for this order
     tickets_query = """
@@ -268,8 +290,17 @@ def history():
         query += " AND fo.order_status = %s"
         params.append(status_filter)
 
-    query += " GROUP BY fo.order_id ORDER BY fo.order_date DESC"
+    query += " GROUP BY fo.order_id ORDER BY fo.order_date ASC"
 
     orders = execute_query(query, tuple(params), fetch_all=True)
-    return render_template('orders/history.html', orders=orders, current_status=status_filter)
+    
+    # Add per-customer order number (chronological, starting from 1)
+    for idx, order in enumerate(orders, start=1):
+        order['customer_order_number'] = idx
+    
+    # Reverse to show newest first (but numbers remain chronological)
+    orders_list = list(orders)
+    orders_list.reverse()
+
+    return render_template('orders/history.html', orders=orders_list, current_status=status_filter)
 

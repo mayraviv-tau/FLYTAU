@@ -19,7 +19,7 @@
             {% for order in orders %}
                 <div class="order-card">
                     <div class="order-header">
-                        <span class="order-number">הזמנה #{{ order.order_id }}</span>
+                        <span class="order-number">הזמנה #{{ order.customer_order_number }}</span>
                         <span class="order-status status-{{ order.order_status.lower().replace('_', '-') }}">
                             {{ order.order_status }}
                         </span>

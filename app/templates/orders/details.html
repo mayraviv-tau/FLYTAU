@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}פרטי הזמנה #{{ order.order_id }} - FLYTAU{% endblock %}
+{% block title %}פרטי הזמנה #{{ order.customer_order_number }} - FLYTAU{% endblock %}
 
 {% block content %}
 <div class="order-details-container">
-    <h1>פרטי הזמנה #{{ order.order_id }}</h1>
+    <h1>פרטי הזמנה #{{ order.customer_order_number }}</h1>
     
     <div class="order-info">
         <h2>פרטי הזמנה</h2>
