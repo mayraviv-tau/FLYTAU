@@ -7,10 +7,23 @@ from database import execute_query, get_db_cursor
 from utils.auth import is_logged_in, is_manager, get_current_manager_id
 
 bp = Blueprint('flights', __name__)
+def update_expired_flights():
+    """Update status of flights that have passed to 'Landed'"""
+    try:
+        query = """
+            UPDATE Flight
+            SET status = 'Landed'
+            WHERE status = 'Active'
+            AND departure_datetime < NOW()
+        """
+        execute_query(query, commit=True)
+    except:
+        pass  # Ignore errors
 
 @bp.route('/search', methods=['GET', 'POST'])
 def search():
     """Search flights by date, origin, and destination"""
+    update_expired_flights()
     if request.method == 'POST':
         origin = request.form.get('origin_airport')
         destination = request.form.get('destination_airport')
@@ -131,6 +144,7 @@ def seats(flight_id):
 @bp.route('/list')
 def list():
     """List all flights (for managers)"""
+    update_expired_flights()
     if not is_manager():
         flash('אין הרשאה לגשת לדף זה', 'error')
         return redirect(url_for('flights.search'))

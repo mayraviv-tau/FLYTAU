@@ -5,7 +5,7 @@
 {% block content %}
 <div class="seats-container">
     <h1>בחירת מושבים</h1>
-    
+
     <div class="flight-info">
         <h2>פרטי הטיסה</h2>
         <p><strong>מסלול:</strong> {{ flight.origin_airport }} → {{ flight.destination_airport }}</p>
@@ -13,22 +13,22 @@
         <p><strong>משך טיסה:</strong> {{ flight.flight_duration }} שעות</p>
         <p><strong>מטוס:</strong> {{ flight.manufacturer }} ({{ flight.size_category }})</p>
     </div>
-    
+
     <form method="POST" action="{{ url_for('orders.create') }}" id="seat-selection-form">
         <input type="hidden" name="flight_id" value="{{ flight.flight_id }}">
         <input type="hidden" name="plane_id" value="{{ flight.plane_id }}">
-        
+
         {% for class_type, seats in seats_by_class.items() %}
             <div class="class-section">
                 <h3>מחלקה: {{ class_type }}</h3>
                 <div class="seats-grid">
                     {% for seat in seats %}
                         <label class="seat-label {% if not seat.available %}seat-occupied{% endif %}">
-                            <input type="checkbox" 
-                                   name="seats" 
+                            <input type="checkbox"
+                                   name="seats"
                                    value="{{ seat.plane_id }},{{ seat.class_type }},{{ seat.seat_number }}"
                                    {% if not seat.available %}disabled{% endif %}
-                                   data-price="{{ '1500' if seat.class_type == 'Business' else '800' }}">
+                                   data-price="{{ flight.price_business if seat.class_type == 'Business' else flight.price_economy }}">
                             <span class="seat-number">{{ seat.seat_number }}</span>
                             {% if not seat.available %}
                                 <span class="seat-status">תפוס</span>
@@ -38,13 +38,13 @@
                 </div>
             </div>
         {% endfor %}
-        
+
         <div class="order-summary">
             <h3>סיכום הזמנה</h3>
             <p>מספר מושבים נבחרים: <span id="selected-count">0</span></p>
             <p>סכום כולל: <span id="total-price">0.00</span> ₪</p>
         </div>
-        
+
         <button type="submit" class="btn-primary" id="submit-btn" disabled>
             המשך להזמנה
         </button>
@@ -58,13 +58,13 @@ const selectedCount = document.getElementById('selected-count');
 const totalPrice = document.getElementById('total-price');
 const submitBtn = document.getElementById('submit-btn');
 
-const businessPrice = 1500;
-const economyPrice = 800;
+const businessPrice = {{ flight.price_business|int }};
+const economyPrice = {{ flight.price_economy|int }};
 
 function updateSummary() {
     let count = 0;
     let total = 0;
-    
+
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
             count++;
@@ -72,7 +72,7 @@ function updateSummary() {
             total += price;
         }
     });
-    
+
     selectedCount.textContent = count;
     totalPrice.textContent = total.toFixed(2);
     submitBtn.disabled = count === 0;
