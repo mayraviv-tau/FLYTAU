@@ -71,7 +71,8 @@ def create():
                     return redirect(url_for('flights.seats', flight_id=flight_id))
 
                 # Calculate price (Business: 1500, Economy: 800)
-                price = 1500 if seat_class == 'Business' else 800
+                # Calculate price from flight
+                price = float(flight['price_business']) if seat_class == 'Business' else float(flight['price_economy'])
                 seats_to_book.append((seat_plane_id, seat_class, seat_number, price))
                 total_price += price
 

@@ -5,11 +5,11 @@
 {% block content %}
 <div class="flights-container">
     <h1>ניהול טיסות</h1>
-    
+
     <div class="actions">
         <a href="{{ url_for('flights.create') }}" class="btn-primary">הוסף טיסה חדשה</a>
     </div>
-    
+
     <div class="flights-list">
         {% for flight in flights %}
             <div class="flight-card">
@@ -35,6 +35,9 @@
                     <a href="{{ url_for('managers.assign_crew', flight_id=flight.flight_id) }}" class="btn-primary">
                         שיבוץ צוות
                     </a>
+                    <a href="{{ url_for('flights.edit_prices', flight_id=flight.flight_id) }}" class="btn-secondary">
+                        עריכת מחירים
+                    </a>
                     <form method="POST" action="{{ url_for('flights.update_status', flight_id=flight.flight_id) }}" style="display: inline;">
                         <select name="status" onchange="this.form.submit()">
                             <option value="Active" {% if flight.status == 'Active' %}selected{% endif %}>Active</option>
@@ -43,7 +46,7 @@
                             <option value="Canceled" {% if flight.status == 'Canceled' %}selected{% endif %}>Canceled</option>
                         </select>
                     </form>
-                    <form method="POST" action="{{ url_for('flights.cancel', flight_id=flight.flight_id) }}" style="display: inline;" 
+                    <form method="POST" action="{{ url_for('flights.cancel', flight_id=flight.flight_id) }}" style="display: inline;"
                           onsubmit="return confirm('האם אתה בטוח שברצונך לבטל טיסה זו?');">
                         <button type="submit" class="btn-danger">בטל טיסה</button>
                     </form>

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="form-container">
     <h1>יצירת טיסה חדשה</h1>
-    
+
     <form method="POST" action="{{ url_for('flights.create') }}" class="main-form">
         <div class="form-group">
             <label for="origin_airport">שדה תעופה מקור *</label>
@@ -16,7 +16,7 @@
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="form-group">
             <label for="destination_airport">שדה תעופה יעד *</label>
             <select id="destination_airport" name="destination_airport" required>
@@ -26,7 +26,7 @@
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="form-group">
             <label for="plane_id">מטוס *</label>
             <select id="plane_id" name="plane_id" required>
@@ -38,12 +38,22 @@
                 {% endfor %}
             </select>
         </div>
-        
+
         <div class="form-group">
             <label for="departure_datetime">תאריך ושעת המראה *</label>
             <input type="datetime-local" id="departure_datetime" name="departure_datetime" required>
         </div>
-        
+
+        <div class="form-group">
+            <label for="price_economy">מחיר מחלקה רגילה (₪) *</label>
+            <input type="number" id="price_economy" name="price_economy" min="0" step="1" value="800" required>
+        </div>
+
+        <div class="form-group">
+            <label for="price_business">מחיר מחלקה עסקים (₪)</label>
+            <input type="number" id="price_business" name="price_business" min="0" step="1" value="1500">
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn-primary">צור טיסה</button>
             <a href="{{ url_for('flights.list') }}" class="btn-secondary">ביטול</a>
