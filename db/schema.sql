@@ -53,7 +53,7 @@ CREATE TABLE Plane (
     acquisition_date DATE NOT NULL -- תאריך רכישה
 );
 
--- טיסה
+-- טיסה (תוקן - נוספו עמודות מחיר)
 CREATE TABLE Flight (
     flight_id INT AUTO_INCREMENT PRIMARY KEY, -- מזהה טיסה
     origin_airport VARCHAR(50) NOT NULL,
@@ -62,6 +62,8 @@ CREATE TABLE Flight (
     departure_datetime DATETIME NOT NULL, -- תאריך ושעת המראה
     manager_id VARCHAR(9) NOT NULL, -- תעודת זהות
     status ENUM('Active', 'Full', 'Landed', 'Canceled') NOT NULL DEFAULT 'Active', -- סטטוס טיסה
+    price_economy DECIMAL(10, 2) NOT NULL DEFAULT 800.00, -- מחיר מחלקה רגילה
+    price_business DECIMAL(10, 2) DEFAULT NULL, -- מחיר מחלקה עסקים (NULL למטוס קטן)
     FOREIGN KEY (plane_id) REFERENCES Plane(plane_id),
     FOREIGN KEY (manager_id) REFERENCES Manager(id_number),
     FOREIGN KEY (origin_airport, destination_airport) 
@@ -127,15 +129,12 @@ CREATE TABLE FlightOrder (
 
 -- כרטיס טיסה
 CREATE TABLE Ticket (
-    ticket_id INT AUTO_INCREMENT PRIMARY KEY,
-    flight_id INT NOT NULL, -- מזהה טיסה
-    order_id INT NOT NULL, -- קוד הזמנה
-	plane_id INT NOT NULL, -- מזהה מטוס
-    class_type ENUM('Economy', 'Business') NOT NULL, -- סוג מחלקה
-    seat_number VARCHAR(10) NOT NULL, -- מספר מושב
+    order_id INT NOT NULL, -- קוד הזמנה(F)
+    plane_id INT NOT NULL, -- מזהה מטוס(F)
+    class_type ENUM('Economy', 'Business') NOT NULL, -- סוג מחלקה(F)
+    seat_number VARCHAR(10) NOT NULL, -- מספר מושב(F)
     price DECIMAL(10, 2) NOT NULL, -- מחיר
-    UNIQUE (flight_id, seat_number),
-    FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE,
+    PRIMARY KEY (order_id, plane_id, class_type, seat_number),
     FOREIGN KEY (order_id) REFERENCES FlightOrder(order_id) ON DELETE CASCADE,
     FOREIGN KEY (plane_id, class_type, seat_number) 
         REFERENCES Seat(plane_id, class_type, seat_number)

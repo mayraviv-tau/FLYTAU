@@ -161,6 +161,16 @@ def list():
         ORDER BY f.departure_datetime DESC
     """
     flights = execute_query(query, fetch_all=True)
+    
+    # Check which planes have Business class for display
+    for flight in flights:
+        business_check_query = """
+            SELECT COUNT(*) as has_business
+            FROM PlaneClass
+            WHERE plane_id = %s AND class_type = 'Business'
+        """
+        business_check = execute_query(business_check_query, (flight['plane_id'],), fetch_one=True)
+        flight['has_business'] = business_check and business_check['has_business'] > 0
 
     return render_template('flights/list.html', flights=flights)
 
@@ -179,6 +189,19 @@ def create():
         manager_id = get_current_manager_id()
         price_economy = request.form.get('price_economy', 800)
         price_business = request.form.get('price_business', 1500)
+
+        # Check if plane has Business class
+        business_check_query = """
+            SELECT COUNT(*) as has_business
+            FROM PlaneClass
+            WHERE plane_id = %s AND class_type = 'Business'
+        """
+        business_check = execute_query(business_check_query, (plane_id,), fetch_one=True)
+        has_business = business_check and business_check['has_business'] > 0
+        
+        # Set price_business to NULL if plane doesn't have Business class
+        if not has_business:
+            price_business = None
 
         try:
             query = """
@@ -217,9 +240,18 @@ def cancel(flight_id):
         return redirect(url_for('flights.search'))
 
     try:
-        query = "UPDATE Flight SET status = 'Canceled' WHERE flight_id = %s"
-        execute_query(query, (flight_id,), commit=True)
-        flash('טיסה בוטלה בהצלחה', 'success')
+        with get_db_cursor(commit=True) as cursor:
+            # Update flight status
+            cursor.execute("UPDATE Flight SET status = 'Canceled' WHERE flight_id = %s", (flight_id,))
+            
+            # Update all related orders to Canceled_By_Company
+            cursor.execute("""
+                UPDATE FlightOrder 
+                SET order_status = 'Canceled_By_Company' 
+                WHERE flight_id = %s AND order_status = 'Active'
+            """, (flight_id,))
+        
+        flash('טיסה בוטלה בהצלחה והזמנות קשורות עודכנו', 'success')
     except Exception as e:
         flash(f'שגיאה בביטול טיסה: {str(e)}', 'error')
 
@@ -258,10 +290,32 @@ def edit_prices(flight_id):
     if not flight:
         flash('טיסה לא נמצאה', 'error')
         return redirect(url_for('flights.list'))
+    
+    # Check if plane has Business class
+    business_check_query = """
+        SELECT COUNT(*) as has_business
+        FROM PlaneClass
+        WHERE plane_id = %s AND class_type = 'Business'
+    """
+    business_check = execute_query(business_check_query, (flight['plane_id'],), fetch_one=True)
+    flight['has_business'] = business_check and business_check['has_business'] > 0
 
     if request.method == 'POST':
         price_economy = request.form.get('price_economy')
         price_business = request.form.get('price_business')
+        
+        # Check if plane has Business class
+        business_check_query = """
+            SELECT COUNT(*) as has_business
+            FROM PlaneClass
+            WHERE plane_id = %s AND class_type = 'Business'
+        """
+        business_check = execute_query(business_check_query, (flight['plane_id'],), fetch_one=True)
+        has_business = business_check and business_check['has_business'] > 0
+        
+        # Set price_business to NULL if plane doesn't have Business class
+        if not has_business:
+            price_business = None
 
         try:
             update_query = """
@@ -276,6 +330,7 @@ def edit_prices(flight_id):
             flash(f'שגיאה בעדכון מחירים: {str(e)}', 'error')
 
     return render_template('flights/edit_prices.html', flight=flight)
+
 
 
 

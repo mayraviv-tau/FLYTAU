@@ -31,7 +31,17 @@ INSERT INTO FlightAttendant (id_number, first_name_hebrew, last_name_hebrew, sta
 ('400000007', 'אנה', 'זק', '2021-01-01', '050-4000007', TRUE),
 ('400000008', 'אגם', 'בוחבוט', '2021-01-01', '050-4000008', TRUE),
 ('400000009', 'מרגי', 'יהונתן', '2021-01-01', '050-4000009', TRUE),
-('400000010', 'רביב', 'כנר', '2021-01-01', '050-4000010', FALSE);
+('400000010', 'רביב', 'כנר', '2021-01-01', '050-4000010', FALSE),
+('400000011', 'שירה', 'כהן', '2022-01-01', '050-4000011', TRUE),
+('400000012', 'מיכל', 'לוי', '2022-01-01', '050-4000012', TRUE),
+('400000013', 'תמר', 'דוד', '2022-01-01', '050-4000013', TRUE),
+('400000014', 'רותם', 'ישראלי', '2022-01-01', '050-4000014', FALSE),
+('400000015', 'ליאור', 'כהן', '2022-01-01', '050-4000015', FALSE),
+('400000016', 'אור', 'שלום', '2023-01-01', '050-4000016', TRUE),
+('400000017', 'מור', 'אברהם', '2023-01-01', '050-4000017', FALSE),
+('400000018', 'יובל', 'יעקב', '2023-01-01', '050-4000018', FALSE),
+('400000019', 'רוני', 'משה', '2023-01-01', '050-4000019', FALSE),
+('400000020', 'דנה', 'אהרון', '2023-01-01', '050-4000020', FALSE);
 
 INSERT INTO FlightLine (origin_airport, destination_airport, flight_duration) VALUES
 ('TLV', 'JFK', 12.5), ('JFK', 'TLV', 11.0),
@@ -43,7 +53,8 @@ INSERT INTO Plane (plane_id, manufacturer, size_category, acquisition_date) VALU
 (2, 'Boeing', 'Large', '2019-06-15'),
 (3, 'Airbus', 'Large', '2020-03-10'),
 (4, 'Airbus', 'Small', '2021-11-20'),
-(5, 'Dassault', 'Small', '2022-02-28');
+(5, 'Dassault', 'Small', '2022-02-28'),
+(6, 'Boeing', 'Large', '2023-05-10');
 
 -- =============================================
 -- PLANE CONFIGURATION
@@ -59,6 +70,12 @@ INSERT INTO Seat VALUES (4, 'Economy', '1A'), (4, 'Economy', '1B');
 
 INSERT INTO PlaneClass VALUES (5, 'Economy', 18, 4);
 INSERT INTO Seat VALUES (5, 'Economy', '1A'), (5, 'Economy', '1B');
+
+INSERT INTO PlaneClass VALUES (2, 'Business', 6, 4), (2, 'Economy', 32, 6);
+INSERT INTO Seat VALUES (2, 'Business', '1A'), (2, 'Business', '1B'), (2, 'Economy', '11A'), (2, 'Economy', '11B');
+
+INSERT INTO PlaneClass VALUES (6, 'Business', 5, 4), (6, 'Economy', 30, 6);
+INSERT INTO Seat VALUES (6, 'Business', '1A'), (6, 'Business', '1B'), (6, 'Economy', '10A'), (6, 'Economy', '10B');
 
 -- =============================================
 -- CUSTOMERS
@@ -82,6 +99,8 @@ INSERT INTO Flight VALUES (102, 'TLV', 'LHR', 3, '2025-12-15 09:00:00', '1000000
 INSERT INTO Flight VALUES (103, 'TLV', 'ETM', 4, '2026-01-20 10:00:00', '100000001', 'Landed');
 INSERT INTO Flight VALUES (104, 'ETM', 'TLV', 5, '2026-02-10 11:00:00', '100000002', 'Active');
 INSERT INTO Flight VALUES (105, 'LHR', 'TLV', 1, '2026-03-05 14:00:00', '100000002', 'Active');
+INSERT INTO Flight VALUES (106, 'TLV', 'JFK', 2, '2026-04-15 10:00:00', '100000001', 'Active');
+INSERT INTO Flight VALUES (107, 'JFK', 'TLV', 6, '2026-05-20 08:00:00', '100000002', 'Active');
 
 -- =============================================
 -- CREW ASSIGNMENTS (With explicit column names to fix previous error)
@@ -91,14 +110,18 @@ INSERT INTO FlightPilotAssignment (flight_id, pilot_id) VALUES
 (102, '300000003'), (102, '300000004'), 
 (103, '300000006'), 
 (104, '300000007'), 
-(105, '300000008');
+(105, '300000008'),
+(106, '300000001'), (106, '300000002'), (106, '300000003'),
+(107, '300000004'), (107, '300000005');
 
 INSERT INTO FlightAttendantAssignment (flight_id, flight_attendant_id) VALUES
 (101, '400000001'), (101, '400000002'),
 (102, '400000003'), (102, '400000004'),
 (103, '400000005'),
 (104, '400000006'),
-(105, '400000007');
+(105, '400000007'),
+(106, '400000001'), (106, '400000002'), (106, '400000003'), (106, '400000004'), (106, '400000005'), (106, '400000006'),
+(107, '400000007'), (107, '400000008'), (107, '400000009'), (107, '400000010'), (107, '400000011'), (107, '400000012');
 
 -- =============================================
 -- ORDERS & TICKETS

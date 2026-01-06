@@ -28,6 +28,14 @@
                         <strong>מטוס:</strong> {{ flight.manufacturer }} ({{ flight.size_category }})
                     </div>
                     <div class="detail-item">
+                        <strong>מחיר מחלקה רגילה:</strong> {{ flight.price_economy }} ₪
+                    </div>
+                    {% if flight.price_business %}
+                    <div class="detail-item">
+                        <strong>מחיר מחלקה עסקים:</strong> {{ flight.price_business }} ₪
+                    </div>
+                    {% endif %}
+                    <div class="detail-item">
                         <strong>מנהל:</strong> {{ flight.first_name_hebrew }} {{ flight.last_name_hebrew }}
                     </div>
                 </div>

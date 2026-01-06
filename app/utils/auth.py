@@ -52,7 +52,7 @@ def verify_customer(email, password):
     """
     user = execute_query(query, (email,), fetch_one=True)
 
-    if user and user['account_password'] == password:
+    if user and verify_password_hash(user['account_password'], password):
         return True
     return False
 
@@ -65,7 +65,7 @@ def verify_manager(manager_id, password):
     """
     manager = execute_query(query, (manager_id,), fetch_one=True)
 
-    if manager and manager['account_password'] == password:
+    if manager and verify_password_hash(manager['account_password'], password):
         return True
     return False
 

@@ -4,14 +4,19 @@ Handles order creation, listing, cancellation, and history
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from database import execute_query, get_db_cursor
-from utils.auth import is_logged_in, get_current_user_email, get_current_manager_id
-from datetime import datetime
+from utils.auth import is_logged_in, get_current_user_email, get_current_manager_id, is_manager
+from datetime import datetime, timedelta
 
 bp = Blueprint('orders', __name__)
 
 @bp.route('/create', methods=['POST'])
 def create():
     """Create new order with tickets"""
+    # Prevent managers from booking flights
+    if is_manager():
+        flash('מנהלים לא יכולים להזמין טיסות', 'error')
+        return redirect(url_for('flights.search'))
+    
     if not request.form.get('flight_id') or not request.form.getlist('seats'):
         flash('יש לבחור לפחות מושב אחד', 'error')
         return redirect(url_for('flights.search'))
@@ -234,6 +239,23 @@ def cancel(order_id):
         flash('לא ניתן לבטל הזמנה שכבר בוטלה או הושלמה', 'error')
         return redirect(url_for('orders.details', order_id=order_id))
 
+    # Get flight departure time to check 36 hours limit
+    flight_query = """
+        SELECT departure_datetime 
+        FROM Flight 
+        WHERE flight_id = (SELECT flight_id FROM FlightOrder WHERE order_id = %s)
+    """
+    flight = execute_query(flight_query, (order_id,), fetch_one=True)
+    
+    if flight:
+        departure_time = flight['departure_datetime']
+        time_until_departure = departure_time - datetime.now()
+        
+        # Check if less than 36 hours before departure
+        if time_until_departure < timedelta(hours=36):
+            flash('לא ניתן לבטל הזמנה פחות מ-36 שעות לפני מועד הטיסה', 'error')
+            return redirect(url_for('orders.details', order_id=order_id))
+
     try:
         with get_db_cursor(commit=True) as cursor:
             # Calculate cancellation fee (5% of original total)
@@ -257,6 +279,50 @@ def cancel(order_id):
     except Exception as e:
         flash(f'שגיאה בביטול הזמנה: {str(e)}', 'error')
         return redirect(url_for('orders.details', order_id=order_id))
+
+@bp.route('/guest-view', methods=['GET', 'POST'])
+def guest_view():
+    """Allow guests to view tickets using order ID and email"""
+    if request.method == 'POST':
+        order_id = request.form.get('order_id')
+        email = request.form.get('email')
+        
+        if not order_id or not email:
+            flash('יש למלא את קוד ההזמנה וכתובת המייל', 'error')
+            return render_template('orders/guest_view.html')
+        
+        try:
+            order_id = int(order_id)
+        except ValueError:
+            flash('קוד הזמנה חייב להיות מספר', 'error')
+            return render_template('orders/guest_view.html')
+        
+        # Get order details
+        order_query = """
+            SELECT fo.*, f.origin_airport, f.destination_airport,
+                   f.departure_datetime, f.status AS flight_status
+            FROM FlightOrder fo
+            JOIN Flight f ON fo.flight_id = f.flight_id
+            WHERE fo.order_id = %s AND fo.customer_email = %s
+        """
+        order = execute_query(order_query, (order_id, email), fetch_one=True)
+        
+        if not order:
+            flash('הזמנה לא נמצאה. אנא ודא שקוד ההזמנה וכתובת המייל נכונים', 'error')
+            return render_template('orders/guest_view.html')
+        
+        # Get tickets for this order
+        tickets_query = """
+            SELECT t.*
+            FROM Ticket t
+            WHERE t.order_id = %s
+            ORDER BY t.class_type, t.seat_number
+        """
+        tickets = execute_query(tickets_query, (order_id,), fetch_all=True)
+        
+        return render_template('orders/guest_details.html', order=order, tickets=tickets)
+    
+    return render_template('orders/guest_view.html')
 
 @bp.route('/history')
 def history():

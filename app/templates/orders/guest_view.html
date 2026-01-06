@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}צפייה בכרטיסים - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <h1>צפייה בכרטיסים</h1>
+    <p>הזן את קוד ההזמנה וכתובת המייל כדי לצפות בכרטיסים שלך</p>
+    
+    <form method="POST" class="guest-view-form">
+        <div class="form-group">
+            <label for="order_id">קוד הזמנה:</label>
+            <input type="number" id="order_id" name="order_id" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">כתובת מייל:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <button type="submit" class="btn-primary">הצג כרטיסים</button>
+    </form>
+    
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('flights.search') }}" class="btn-secondary">חזרה לחיפוש טיסות</a>
+    </div>
+</div>
+{% endblock %}
+
