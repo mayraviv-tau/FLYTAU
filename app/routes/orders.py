@@ -95,11 +95,11 @@ def create():
 
             # Create tickets
             ticket_query = """
-                INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price)
+                VALUES (%s, %s, %s, %s, %s)
             """
             for seat_plane_id, seat_class, seat_number, price in seats_to_book:
-                cursor.execute(ticket_query, (flight_id, order_id, seat_plane_id, seat_class, seat_number, price))
+                cursor.execute(ticket_query, (order_id, seat_plane_id, seat_class, seat_number, price))
 
             # Update flight status to Full if needed (check capacity)
             capacity_query = """

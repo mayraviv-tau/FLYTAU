@@ -129,47 +129,47 @@ INSERT INTO FlightAttendantAssignment (flight_id, flight_attendant_id) VALUES
 -- Order 1: Nov 2025 (Completed)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (1, 'c1@test.com', 101, '2025-11-01 10:00:00', 'Completed', 1000);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (101, 1, 1, 'Business', '1A', 1000);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (1, 1, 'Business', '1A', 1000);
 
 -- Order 2: Nov 2025 (Completed)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (2, 'c2@test.com', 101, '2025-11-02 10:00:00', 'Completed', 500);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (101, 2, 1, 'Economy', '10A', 500);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (2, 1, 'Economy', '10A', 500);
 
 -- Order 3: Dec 2025 (Completed)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (3, 'c3@test.com', 102, '2025-12-01 10:00:00', 'Completed', 900);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (102, 3, 3, 'Business', '1A', 900);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (3, 3, 'Business', '1A', 900);
 
 -- Order 4: Dec 2025 (Canceled By Client)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (4, 'c4@test.com', 102, '2025-12-05 10:00:00', 'Canceled_By_Client', 45.00); 
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (102, 4, 3, 'Economy', '12A', 900);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (4, 3, 'Economy', '12A', 900);
 
 -- Order 5: Jan 2026 (Active)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (5, 'c1@test.com', 103, '2026-01-10 10:00:00', 'Active', 200);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (103, 5, 4, 'Economy', '1A', 200);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (5, 4, 'Economy', '1A', 200);
 
 -- Order 6: Feb 2026 (Canceled By Company)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (6, 'c2@test.com', 104, '2026-02-01 10:00:00', 'Canceled_By_Company', 0);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (104, 6, 5, 'Economy', '1A', 300);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (6, 5, 'Economy', '1A', 300);
 
 -- Order 7: Mar 2026 (Active)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (7, 'c3@test.com', 105, '2026-03-01 10:00:00', 'Active', 600);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (105, 7, 1, 'Economy', '10B', 600);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (7, 1, 'Economy', '10B', 600);
 
 -- Order 8: Mar 2026 (Active)
 INSERT INTO FlightOrder (order_id, customer_email, flight_id, order_date, order_status, total_payment) 
 VALUES (8, 'c5@test.com', 105, '2026-03-02 10:00:00', 'Active', 1200);
-INSERT INTO Ticket (flight_id, order_id, plane_id, class_type, seat_number, price) 
-VALUES (105, 8, 1, 'Business', '1B', 1200);
+INSERT INTO Ticket (order_id, plane_id, class_type, seat_number, price) 
+VALUES (8, 1, 'Business', '1B', 1200);
