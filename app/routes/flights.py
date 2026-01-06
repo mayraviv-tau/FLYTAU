@@ -275,6 +275,8 @@ def update_status(flight_id):
         flash('סטטוס טיסה עודכן בהצלחה', 'success')
     except Exception as e:
         flash(f'שגיאה בעדכון סטטוס: {str(e)}', 'error')
+    
+    return redirect(url_for('flights.list'))
 
 @bp.route('/<int:flight_id>/edit-prices', methods=['GET', 'POST'])
 def edit_prices(flight_id):
