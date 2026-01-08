@@ -4,7 +4,7 @@ Handles login, register, logout for customers and managers
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from database import execute_query, get_db_cursor
-from utils.auth import hash_password, login_customer, login_manager, logout, verify_customer, verify_manager
+from utils.auth import login_customer, login_manager, logout, verify_customer, verify_manager
 
 bp = Blueprint('auth', __name__)
 
@@ -12,14 +12,14 @@ bp = Blueprint('auth', __name__)
 def register():
     """Register new customer"""
     if request.method == 'POST':
-        email = request.form.get('email')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        password = request.form.get('password')
-        registration_date = request.form.get('registration_date')
-        birth_date = request.form.get('birth_date')
-        passport_number = request.form.get('passport_number')
-        phone_numbers = request.form.getlist('phone_number')  # Can have multiple phones
+        email = request.form.get('email', '').strip().lower()  # Normalize email
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        password = request.form.get('password', '')
+        registration_date = request.form.get('registration_date', '').strip()
+        birth_date = request.form.get('birth_date', '').strip()
+        passport_number = request.form.get('passport_number', '').strip()
+        phone_numbers = request.form.getlist('phone_number')
         
         # Validate required fields
         if not all([email, first_name, last_name, password, registration_date, birth_date, passport_number]):
@@ -29,7 +29,7 @@ def register():
         try:
             with get_db_cursor(commit=True) as cursor:
                 # Check if customer already exists
-                check_query = "SELECT email FROM Customer WHERE email = %s"
+                check_query = "SELECT email FROM Customer WHERE LOWER(email) = %s"
                 cursor.execute(check_query, (email,))
                 if cursor.fetchone():
                     flash('כתובת המייל כבר קיימת במערכת', 'error')
@@ -42,20 +42,19 @@ def register():
                 """
                 cursor.execute(customer_query, (email, first_name, last_name))
                 
-                # Insert into RegisteredCustomer table
+                # Insert into RegisteredCustomer table (plain text password for university project)
                 registered_query = """
                     INSERT INTO RegisteredCustomer 
                     (email, registration_date, birth_date, passport_number, account_password)
                     VALUES (%s, %s, %s, %s, %s)
                 """
-                hashed_password = hash_password(password)
-                cursor.execute(registered_query, (email, registration_date, birth_date, passport_number, hashed_password))
+                cursor.execute(registered_query, (email, registration_date, birth_date, passport_number, password))
                 
                 # Insert phone numbers if provided
                 if phone_numbers:
                     phone_query = "INSERT INTO CustomerPhone (email, phone_number) VALUES (%s, %s)"
                     for phone in phone_numbers:
-                        if phone.strip():  # Only insert non-empty phone numbers
+                        if phone.strip():
                             cursor.execute(phone_query, (email, phone.strip()))
             
             flash('ההרשמה בוצעה בהצלחה! אנא התחבר', 'success')
@@ -71,8 +70,8 @@ def register():
 def login():
     """Customer login"""
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = request.form.get('email', '').strip().lower()  # Normalize email
+        password = request.form.get('password', '')
         
         if not email or not password:
             flash('יש למלא כתובת מייל וסיסמה', 'error')
@@ -113,8 +112,3 @@ def logout_user():
     logout()
     flash('התנתקת בהצלחה', 'info')
     return redirect(url_for('auth.login'))
-
-
-
-
-

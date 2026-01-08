@@ -9,7 +9,9 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <a href="{{ url_for('flights.search') }}" class="logo">FLYTAU</a>
+            <a href="{{ url_for('flights.search') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="FLYTAU" class="logo-img">
+            </a>
             <ul class="nav-menu">
                 {% if session.user_email or session.manager_id %}
                     {% if session.manager_id %}
@@ -35,6 +37,8 @@
                         <li><span class="user-info">מנהל: {{ session.manager_id }}</span></li>
                     {% endif %}
                 {% else %}
+                    <li><a href="{{ url_for('flights.search') }}">חיפוש טיסות</a></li>
+                    <li><a href="{{ url_for('orders.lookup') }}">צפייה בהזמנה</a></li>
                     <li><a href="{{ url_for('auth.login') }}">התחבר</a></li>
                     <li><a href="{{ url_for('auth.register') }}">הרשם</a></li>
                     <li><a href="{{ url_for('auth.manager_login') }}">התחבר כמנהל</a></li>

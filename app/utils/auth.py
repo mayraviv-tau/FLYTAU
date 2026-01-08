@@ -1,17 +1,8 @@
 """
 Authentication utility functions
 """
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session
 from database import execute_query
-
-def hash_password(password):
-    """Hash a password using werkzeug"""
-    return generate_password_hash(password)
-
-def verify_password_hash(password_hash, password):
-    """Check if password matches hash"""
-    return check_password_hash(password_hash, password)
 
 def is_logged_in():
     """Check if user is logged in"""
@@ -44,20 +35,29 @@ def logout():
     session.clear()
 
 def verify_customer(email, password):
-    """Verify customer credentials"""
+    """Verify customer credentials - plain text comparison"""
+    email = email.strip().lower() if email else ''
+    
     query = """
         SELECT email, account_password
         FROM RegisteredCustomer
-        WHERE email = %s
+        WHERE LOWER(email) = %s
     """
     user = execute_query(query, (email,), fetch_one=True)
 
-    if user and verify_password_hash(user['account_password'], password):
-        return True
-    return False
+    if not user:
+        return False
+    
+    stored_password = user['account_password']
+    
+    if not stored_password:
+        return False
+    
+    # Simple plain text comparison
+    return stored_password == password
 
 def verify_manager(manager_id, password):
-    """Verify manager credentials"""
+    """Verify manager credentials - plain text comparison"""
     query = """
         SELECT id_number, account_password
         FROM Manager
@@ -65,7 +65,13 @@ def verify_manager(manager_id, password):
     """
     manager = execute_query(query, (manager_id,), fetch_one=True)
 
-    if manager and verify_password_hash(manager['account_password'], password):
-        return True
-    return False
-
+    if not manager:
+        return False
+    
+    stored_password = manager['account_password']
+    
+    if not stored_password:
+        return False
+    
+    # Simple plain text comparison
+    return stored_password == password
