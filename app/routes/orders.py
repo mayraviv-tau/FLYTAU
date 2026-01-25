@@ -298,7 +298,11 @@ def cancel(order_id):
 
     try:
         with db_transaction(commit=True) as db:
-            cancellation_fee = float(order['total_payment']) * 0.05
+            original_payment = float(order['total_payment'])
+            cancellation_fee = original_payment * 0.05
+            refund_amount = original_payment * 0.95
+
+            # Update order status and set payment to cancellation fee
             update_query = """
                 UPDATE FlightOrder
                 SET order_status = 'Canceled_By_Client', total_payment = %s
@@ -306,7 +310,14 @@ def cancel(order_id):
             """
             db.execute(update_query, (cancellation_fee, order_id))
 
-        flash(f'הזמנה בוטלה. דמי ביטול: {cancellation_fee:.2f} ₪', 'success')
+            # Add refund to registered customer's balance (if registered)
+            db.execute("""
+                UPDATE RegisteredCustomer
+                SET balance = balance + %s
+                WHERE email = %s
+            """, (refund_amount, customer_email))
+
+        flash(f'הזמנה בוטלה. דמי ביטול: {cancellation_fee:.2f} ₪. זיכוי: {refund_amount:.2f} ₪', 'success')
         return redirect(url_for('orders.details', order_id=order_id))
 
     except Exception as e:
@@ -407,15 +418,26 @@ def guest_cancel():
     
     try:
         with db_transaction(commit=True) as db:
-            cancellation_fee = float(order['total_payment']) * 0.05
+            original_payment = float(order['total_payment'])
+            cancellation_fee = original_payment * 0.05
+            refund_amount = original_payment * 0.95
+
+            # Update order status and set payment to cancellation fee
             update_query = """
                 UPDATE FlightOrder
                 SET order_status = 'Canceled_By_Client', total_payment = %s
                 WHERE order_id = %s
             """
             db.execute(update_query, (cancellation_fee, order_id))
-        
-        flash(f'הזמנה בוטלה בהצלחה. דמי ביטול: {cancellation_fee:.2f} ₪', 'success')
+
+            # Add refund to registered customer's balance (if registered)
+            db.execute("""
+                UPDATE RegisteredCustomer
+                SET balance = balance + %s
+                WHERE email = %s
+            """, (refund_amount, email))
+
+        flash(f'הזמנה בוטלה בהצלחה. דמי ביטול: {cancellation_fee:.2f} ₪. זיכוי: {refund_amount:.2f} ₪', 'success')
         return redirect(url_for('orders.lookup'))
     
     except Exception as e:

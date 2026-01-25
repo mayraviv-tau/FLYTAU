@@ -51,7 +51,7 @@ def search():
             JOIN Plane p ON f.plane_id = p.plane_id
             JOIN FlightLine fl ON f.origin_airport = fl.origin_airport
                               AND f.destination_airport = fl.destination_airport
-            WHERE f.status IN ('Active', 'Full')
+            WHERE f.status = 'Active'
               AND f.departure_datetime > NOW()
         """
         params = []
@@ -109,7 +109,7 @@ def board():
         JOIN Plane p ON f.plane_id = p.plane_id
         JOIN FlightLine fl ON f.origin_airport = fl.origin_airport
                           AND f.destination_airport = fl.destination_airport
-        WHERE f.status IN ('Active', 'Full')
+        WHERE f.status = 'Active'
           AND f.departure_datetime > NOW()
         ORDER BY f.departure_datetime ASC
     """
@@ -316,6 +316,23 @@ def cancel(flight_id):
         with db_transaction(commit=True) as db:
             # Update flight status
             db.execute("UPDATE Flight SET status = 'Canceled' WHERE flight_id = %s", (flight_id,))
+
+            # Get all active orders for this flight to refund registered customers
+            db.execute("""
+                SELECT fo.customer_email, fo.total_payment
+                FROM FlightOrder fo
+                WHERE fo.flight_id = %s AND fo.order_status = 'Active'
+            """, (flight_id,))
+            orders_to_refund = db.fetchall()
+
+            # Add full refund to registered customers' balance
+            for order in orders_to_refund:
+                refund_amount = float(order['total_payment'])
+                db.execute("""
+                    UPDATE RegisteredCustomer
+                    SET balance = balance + %s
+                    WHERE email = %s
+                """, (refund_amount, order['customer_email']))
 
             # Update all related orders to Canceled_By_Company with full refund (total_payment = 0)
             db.execute("""
