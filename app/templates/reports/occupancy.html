@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}דוח אחוזי תפוסה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>דוח 1: אחוזי תפוסה ממוצעים</h1>
+    
+    <div class="report-content">
+        <div class="report-summary">
+            <h2>אחוז תפוסה ממוצע של כל המערכת</h2>
+            <div class="stat-box">
+                <span class="stat-value">{{ average_occupancy }}%</span>
+            </div>
+            <p class="report-description">
+                דוח זה מחשב את אחוז התפוסה הממוצע של כל הטיסות שבוצעו (סטטוס 'Landed').
+                התפוסה מחושבת על בסיס מספר הכרטיסים שנמכרו מתוך קיבולת המטוס.
+            </p>
+        </div>
+    </div>
+    
+    <div class="report-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn-secondary">חזרה לדוחות</a>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

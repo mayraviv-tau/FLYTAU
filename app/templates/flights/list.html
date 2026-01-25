@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}ניהול טיסות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>ניהול טיסות</h1>
+        <a href="{{ url_for('flights.create') }}" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            הוסף טיסה חדשה
+        </a>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    <div class="filter-tabs">
+        <a href="{{ url_for('flights.list') }}" class="filter-tab {% if not current_status %}active{% endif %}">
+            <i class="fas fa-list"></i>
+            הכל
+        </a>
+        <a href="{{ url_for('flights.list', status='Active') }}" class="filter-tab {% if current_status == 'Active' %}active{% endif %}">
+            <i class="fas fa-check-circle"></i>
+            Active
+        </a>
+        <a href="{{ url_for('flights.list', status='Full') }}" class="filter-tab {% if current_status == 'Full' %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            Full
+        </a>
+        <a href="{{ url_for('flights.list', status='Landed') }}" class="filter-tab {% if current_status == 'Landed' %}active{% endif %}">
+            <i class="fas fa-plane-arrival"></i>
+            Landed
+        </a>
+        <a href="{{ url_for('flights.list', status='Canceled') }}" class="filter-tab {% if current_status == 'Canceled' %}active{% endif %}">
+            <i class="fas fa-ban"></i>
+            Canceled
+        </a>
+    </div>
+
+    <div class="flights-list">
+        {% for flight in flights %}
+            <div class="flight-card">
+                <div class="flight-header">
+                    <span class="flight-route">{{ flight.origin_airport }} → {{ flight.destination_airport }}</span>
+                    <span class="flight-status status-{{ flight.status.lower() }}">{{ flight.status }}</span>
+                </div>
+                <div class="flight-details">
+                    <div class="detail-item">
+                        <strong>מספר טיסה:</strong> {{ flight.flight_id }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>תאריך ושעה:</strong> {{ flight.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="detail-item">
+                        <strong>מטוס:</strong> {{ flight.manufacturer }} ({{ flight.size_category }})
+                    </div>
+                    <div class="detail-item">
+                        <strong>מחיר מחלקה רגילה:</strong> {{ flight.price_economy }} ₪
+                    </div>
+                    {% if flight.price_business %}
+                    <div class="detail-item">
+                        <strong>מחיר מחלקה עסקים:</strong> {{ flight.price_business }} ₪
+                    </div>
+                    {% endif %}
+                    <div class="detail-item">
+                        <strong>מנהל:</strong> {{ flight.first_name_hebrew }} {{ flight.last_name_hebrew }}
+                    </div>
+                </div>
+                <div class="flight-actions">
+                    <a href="{{ url_for('managers.assign_crew', flight_id=flight.flight_id) }}" class="btn-primary">
+                        שיבוץ צוות
+                    </a>
+                    <a href="{{ url_for('flights.edit_prices', flight_id=flight.flight_id) }}" class="btn-secondary">
+                        עריכת מחירים
+                    </a>
+                    <form method="POST" action="{{ url_for('flights.update_status', flight_id=flight.flight_id) }}" style="display: inline;">
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="Active" {% if flight.status == 'Active' %}selected{% endif %}>Active</option>
+                            <option value="Full" {% if flight.status == 'Full' %}selected{% endif %}>Full</option>
+                            <option value="Landed" {% if flight.status == 'Landed' %}selected{% endif %}>Landed</option>
+                            <option value="Canceled" {% if flight.status == 'Canceled' %}selected{% endif %}>Canceled</option>
+                        </select>
+                    </form>
+                    <form method="POST" action="{{ url_for('flights.cancel', flight_id=flight.flight_id) }}" style="display: inline;"
+                          onsubmit="return confirm('האם אתה בטוח שברצונך לבטל טיסה זו?');">
+                        <button type="submit" class="btn-danger">בטל טיסה</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if not flights %}
+    <div class="no-results">
+        <i class="fas fa-plane"></i>
+        <h3>אין טיסות להצגה</h3>
+        <p>{% if current_status %}לא נמצאו טיסות בסטטוס זה{% else %}לא נמצאו טיסות במערכת{% endif %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

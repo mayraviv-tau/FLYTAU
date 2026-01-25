@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}שיבוץ צוות - טיסה #{{ flight.flight_id }} - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="crew-container">
+    <h1>שיבוץ צוות - טיסה #{{ flight.flight_id }}</h1>
+    
+    <div class="flight-info">
+        <p><strong>מסלול:</strong> {{ flight.origin_airport }} → {{ flight.destination_airport }}</p>
+        <p><strong>משך טיסה:</strong> {{ flight.flight_duration }} שעות</p>
+        <p><strong>סוג טיסה:</strong> {% if is_long_haul %}Long Haul{% else %}Short Haul{% endif %}</p>
+        <p><strong>דרישה:</strong> {{ required_pilots }} טייסים, {{ required_fas }} דיילים</p>
+        {% if is_long_haul %}
+            <p class="warning">⚠️ כל הצוות חייב להיות מוכשר לטיסות ארוכות</p>
+        {% endif %}
+    </div>
+    
+    <form method="POST" action="{{ url_for('managers.assign_crew', flight_id=flight.flight_id) }}" class="crew-form">
+        <div class="crew-section">
+            <h2>טייסים ({{ required_pilots }} נדרשים)</h2>
+            {% for i in range(required_pilots) %}
+                <div class="form-group">
+                    <label for="pilot_{{ i }}">טייס {{ i + 1 }} *</label>
+                    <select id="pilot_{{ i }}" name="pilot_id" required>
+                        <option value="">בחר טייס</option>
+                        {% for pilot in pilots %}
+                            <option value="{{ pilot.id_number }}" 
+                                    {% if pilot.id_number in current_pilots %}selected{% endif %}>
+                                {{ pilot.first_name_hebrew }} {{ pilot.last_name_hebrew }} ({{ pilot.id_number }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="crew-section">
+            <h2>דיילים ({{ required_fas }} נדרשים)</h2>
+            {% for i in range(required_fas) %}
+                <div class="form-group">
+                    <label for="fa_{{ i }}">דייל {{ i + 1 }} *</label>
+                    <select id="fa_{{ i }}" name="flight_attendant_id" required>
+                        <option value="">בחר דייל</option>
+                        {% for fa in flight_attendants %}
+                            <option value="{{ fa.id_number }}"
+                                    {% if fa.id_number in current_fas %}selected{% endif %}>
+                                {{ fa.first_name_hebrew }} {{ fa.last_name_hebrew }} ({{ fa.id_number }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">שמור שיבוץ</button>
+            <a href="{{ url_for('flights.list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Prevent selecting the same person twice
+document.querySelectorAll('select[name="pilot_id"]').forEach((select, index) => {
+    select.addEventListener('change', function() {
+        const selectedValue = this.value;
+        document.querySelectorAll('select[name="pilot_id"]').forEach((otherSelect, otherIndex) => {
+            if (index !== otherIndex && otherSelect.value === selectedValue && selectedValue !== '') {
+                alert('לא ניתן לבחור את אותו טייס פעמיים');
+                this.value = '';
+            }
+        });
+    });
+});
+
+document.querySelectorAll('select[name="flight_attendant_id"]').forEach((select, index) => {
+    select.addEventListener('change', function() {
+        const selectedValue = this.value;
+        document.querySelectorAll('select[name="flight_attendant_id"]').forEach((otherSelect, otherIndex) => {
+            if (index !== otherIndex && otherSelect.value === selectedValue && selectedValue !== '') {
+                alert('לא ניתן לבחור את אותו דייל פעמיים');
+                this.value = '';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+
+
+

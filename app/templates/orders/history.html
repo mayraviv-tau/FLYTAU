@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}היסטוריית רכישות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>היסטוריית רכישות</h1>
+    </div>
+
+    <div class="filter-tabs">
+        <a href="{{ url_for('orders.history') }}" class="filter-tab {% if not current_status %}active{% endif %}">
+            <i class="fas fa-list"></i>
+            הכל
+        </a>
+        <a href="{{ url_for('orders.history', status='Completed') }}" class="filter-tab {% if current_status == 'Completed' %}active{% endif %}">
+            <i class="fas fa-check-circle"></i>
+            בוצעה
+        </a>
+        <a href="{{ url_for('orders.history', status='Canceled_By_Client') }}" class="filter-tab {% if current_status == 'Canceled_By_Client' %}active{% endif %}">
+            <i class="fas fa-user-times"></i>
+            ביטול לקוח
+        </a>
+        <a href="{{ url_for('orders.history', status='Canceled_By_Company') }}" class="filter-tab {% if current_status == 'Canceled_By_Company' %}active{% endif %}">
+            <i class="fas fa-ban"></i>
+            ביטול מערכת
+        </a>
+    </div>
+    
+    {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">הזמנה #{{ order.customer_order_number }}</span>
+                        <span class="order-status status-{{ order.order_status.lower().replace('_', '-') }}">
+                            {{ order.order_status }}
+                        </span>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <strong>מסלול:</strong> {{ order.origin_airport }} → {{ order.destination_airport }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>תאריך טיסה:</strong> {{ order.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>מספר כרטיסים:</strong> {{ order.ticket_count }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>סכום:</strong> {{ order.total_payment }} ₪
+                        </div>
+                        <div class="detail-item">
+                            <strong>תאריך הזמנה:</strong> {{ order.order_date.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                    </div>
+                    <div class="order-actions">
+                        <a href="{{ url_for('orders.details', order_id=order.order_id) }}" class="btn-primary">
+                            צפה בפרטים
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <i class="fas fa-history"></i>
+            <h3>אין היסטוריית רכישות</h3>
+            <p>{% if current_status %}לא נמצאו הזמנות בסטטוס זה{% else %}לא נמצאו הזמנות שהושלמו או בוטלו{% endif %}</p>
+            <a href="{{ url_for('flights.search') }}" class="btn-primary">חפש טיסות</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

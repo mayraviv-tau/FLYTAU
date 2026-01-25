@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}התחברות מנהל - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>התחברות כמנהל</h1>
+    <form method="POST" action="{{ url_for('auth.manager_login') }}" class="auth-form">
+        <div class="form-group">
+            <label for="manager_id">תעודת זהות</label>
+            <input type="text" id="manager_id" name="manager_id" required maxlength="9">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">סיסמה</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit" class="btn-primary">התחבר כמנהל</button>
+    </form>
+    
+    <p class="auth-link">
+        <a href="{{ url_for('auth.login') }}">חזרה להתחברות לקוחות</a>
+    </p>
+</div>
+{% endblock %}
+
+
+
+
+

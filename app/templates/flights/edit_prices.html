@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}עריכת מחירי טיסה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>עריכת מחירי טיסה #{{ flight.flight_id }}</h1>
+    
+    <div class="flight-info">
+        <p><strong>מסלול:</strong> {{ flight.origin_airport }} → {{ flight.destination_airport }}</p>
+        <p><strong>תאריך:</strong> {{ flight.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+    
+    <form method="POST" class="main-form">
+        <div class="form-group">
+            <label for="price_economy">מחיר מחלקה רגילה (₪)</label>
+            <input type="number" id="price_economy" name="price_economy" min="0" step="1" value="{{ flight.price_economy|int }}" required>
+        </div>
+        
+        {% if flight.has_business %}
+        <div class="form-group">
+            <label for="price_business">מחיר מחלקה עסקים (₪)</label>
+            <input type="number" id="price_business" name="price_business" min="0" step="1" value="{% if flight.price_business %}{{ flight.price_business|int }}{% else %}1500{% endif %}">
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label>מחיר מחלקה עסקים</label>
+            <p style="color: #666;">המטוס הזה לא כולל מחלקת עסקים</p>
+            <input type="hidden" name="price_business" value="">
+        </div>
+        {% endif %}
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">עדכן מחירים</button>
+            <a href="{{ url_for('flights.list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

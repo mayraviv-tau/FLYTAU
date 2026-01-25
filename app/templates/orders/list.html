@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}ההזמנות שלי - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>ההזמנות שלי</h1>
+        <span class="info-badge">
+            <i class="fas fa-info-circle"></i>
+            הזמנות פעילות בלבד
+        </span>
+    </div>
+
+    {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">הזמנה #{{ order.customer_order_number }}</span>
+                        <span class="order-status status-{{ order.order_status.lower().replace('_', '-') }}">
+                            {{ order.order_status }}
+                        </span>
+                    </div>
+                    <div class="order-details">
+                        <div class="detail-item">
+                            <strong>מסלול:</strong> {{ order.origin_airport }} → {{ order.destination_airport }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>תאריך טיסה:</strong> {{ order.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>מספר כרטיסים:</strong> {{ order.ticket_count }}
+                        </div>
+                        <div class="detail-item">
+                            <strong>סכום:</strong> {{ order.total_payment }} ₪
+                        </div>
+                        <div class="detail-item">
+                            <strong>תאריך הזמנה:</strong> {{ order.order_date.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                    </div>
+                    <div class="order-actions">
+                        <a href="{{ url_for('orders.details', order_id=order.order_id) }}" class="btn-primary">
+                            צפה בפרטים
+                        </a>
+                        {% if order.order_status == 'Active' %}
+                            <form method="POST" action="{{ url_for('orders.cancel', order_id=order.order_id) }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('האם אתה בטוח שברצונך לבטל הזמנה זו? דמי ביטול: 5% מהמחיר המקורי');">
+                                <button type="submit" class="btn-danger">בטל הזמנה</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <i class="fas fa-ticket-alt"></i>
+            <h3>אין הזמנות פעילות</h3>
+            <p>אין לך הזמנות פעילות כרגע. חפש טיסות חדשות!</p>
+            <a href="{{ url_for('flights.search') }}" class="btn-primary">חפש טיסות</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+
+

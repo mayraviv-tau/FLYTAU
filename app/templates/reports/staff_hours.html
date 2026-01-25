@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}דוח שעות טיסה של צוות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>דוח 3: שעות טיסה מצטברות של צוות</h1>
+    
+    <div class="report-content">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>תפקיד</th>
+                    <th>תעודת זהות</th>
+                    <th>שם</th>
+                    <th>שעות טיסות ארוכות</th>
+                    <th>שעות טיסות קצרות</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ row.role }}</td>
+                        <td>{{ row.id_number }}</td>
+                        <td>{{ row.first_name_hebrew }} {{ row.last_name_hebrew }}</td>
+                        <td>{{ "%.2f"|format(row.long_haul_hours) }}</td>
+                        <td>{{ "%.2f"|format(row.short_haul_hours) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if not results %}
+            <p class="no-results">אין נתונים להצגה</p>
+        {% endif %}
+    </div>
+    
+    <div class="report-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn-secondary">חזרה לדוחות</a>
+    </div>
+</div>
+{% endblock %}
+

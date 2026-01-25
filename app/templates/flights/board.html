@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}לוח טיסות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1><i class="fas fa-plane"></i> לוח טיסות</h1>
+        <a href="{{ url_for('flights.search') }}" class="btn-secondary">
+            <i class="fas fa-search"></i>
+            חיפוש טיסות
+        </a>
+    </div>
+
+    {% if flights %}
+    <div class="flights-board">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>מס' טיסה</th>
+                    <th>מוצא</th>
+                    <th>יעד</th>
+                    <th>תאריך</th>
+                    <th>שעה</th>
+                    <th>משך</th>
+                    <th>סטטוס</th>
+                    <th>פעולות</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for flight in flights %}
+                <tr>
+                    <td><strong>{{ flight.flight_id }}</strong></td>
+                    <td>{{ flight.origin_airport }}</td>
+                    <td>{{ flight.destination_airport }}</td>
+                    <td>{{ flight.departure_datetime.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ flight.departure_datetime.strftime('%H:%M') }}</td>
+                    <td>{{ flight.flight_duration }} שעות</td>
+                    <td>
+                        <span class="flight-status status-{{ flight.status.lower() }}">
+                            {% if flight.status == 'Active' %}פעילה
+                            {% elif flight.status == 'Full' %}מלאה
+                            {% else %}{{ flight.status }}{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if flight.status == 'Active' %}
+                        <a href="{{ url_for('flights.seats', flight_id=flight.flight_id) }}" class="btn-small btn-primary">
+                            הזמן
+                        </a>
+                        {% else %}
+                        <span class="text-muted">מלאה</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-plane"></i>
+        <h3>אין טיסות זמינות</h3>
+        <p>לא נמצאו טיסות פעילות כרגע</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

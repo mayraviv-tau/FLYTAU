@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}הזמנה נוצרה בהצלחה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="orders-container">
+    <div class="confirmation-box">
+        <div class="confirmation-icon">&#10003;</div>
+        <h1>ההזמנה נוצרה בהצלחה!</h1>
+
+        <div class="confirmation-details">
+            <h2>פרטי ההזמנה שלך:</h2>
+
+            <p class="confirmation-code">
+                קוד הזמנה: <span>{{ order_id }}</span>
+            </p>
+
+            <p class="confirmation-email">מייל: <strong>{{ email }}</strong></p>
+
+            <div class="confirmation-warning">
+                <strong>חשוב!</strong> שמור את קוד ההזמנה ואת כתובת המייל - תצטרך אותם כדי לצפות בהזמנה או לבטל אותה.
+            </div>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{{ url_for('orders.lookup') }}" class="btn-primary">צפייה בהזמנה</a>
+            <a href="{{ url_for('flights.search') }}" class="btn-secondary">חזרה לחיפוש טיסות</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

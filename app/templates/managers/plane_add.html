@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}הוספת מטוס חדש - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>הוספת מטוס חדש</h1>
+    
+    <form method="POST" action="{{ url_for('managers.plane_add') }}" class="main-form">
+        <div class="form-group">
+            <label for="plane_id">מספר מטוס *</label>
+            <input type="number" id="plane_id" name="plane_id" required min="1">
+            <small>מספר ייחודי למטוס (למשל: 7)</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="manufacturer">יצרן *</label>
+            <select id="manufacturer" name="manufacturer" required>
+                <option value="">בחר יצרן</option>
+                <option value="Boeing">Boeing</option>
+                <option value="Airbus">Airbus</option>
+                <option value="Dassault">Dassault</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="size_category">גודל *</label>
+            <select id="size_category" name="size_category" required>
+                <option value="">בחר גודל</option>
+                <option value="Large">Large</option>
+                <option value="Small">Small</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="acquisition_date">תאריך רכישה *</label>
+            <input type="date" id="acquisition_date" name="acquisition_date" required>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">צור מטוס</button>
+            <a href="{{ url_for('managers.planes_list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+    
+    <div class="info-box">
+        <p><strong>הערה:</strong> לאחר יצירת המטוס, תועבר לדף ניהול מחלקות ומושבים.</p>
+    </div>
+</div>
+{% endblock %}
+
+

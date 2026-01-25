@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}חיפוש טיסות - FLYTAU{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">הפינוק שלך, ה-100 שלנו</h1>
+        <p class="hero-subtitle">גלה את היעדים הכי מדהימים בעולם עם FLYTAU</p>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <form method="POST" action="{{ url_for('flights.search') }}" class="search-form-hero">
+                <div class="search-fields">
+                    <div class="search-field">
+                        <label for="origin_airport">
+                            <i class="fas fa-plane-departure"></i>
+                            מוצא
+                        </label>
+                        <select id="origin_airport" name="origin_airport">
+                            <option value="">בחר שדה תעופה</option>
+                            {% for airport in airports %}
+                                <option value="{{ airport.airport }}" {% if origin == airport.airport %}selected{% endif %}>
+                                    {{ airport.airport }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="search-field-divider">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="destination_airport">
+                            <i class="fas fa-plane-arrival"></i>
+                            יעד
+                        </label>
+                        <select id="destination_airport" name="destination_airport">
+                            <option value="">בחר שדה תעופה</option>
+                            {% for airport in airports %}
+                                <option value="{{ airport.airport }}" {% if destination == airport.airport %}selected{% endif %}>
+                                    {{ airport.airport }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="search-field">
+                        <label for="departure_date">
+                            <i class="fas fa-calendar-alt"></i>
+                            תאריך
+                        </label>
+                        <input type="date" id="departure_date" name="departure_date" value="{{ departure_date or '' }}">
+                    </div>
+
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                        חפש טיסות
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</section>
+
+<!-- Features Section -->
+{% if not flights and request.method != 'POST' %}
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">למה לטוס עם FLYTAU?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>בטיחות מירבית</h3>
+                <p>המטוסים המתקדמים והבטוחים ביותר בתעשייה</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h3>שירות פרימיום</h3>
+                <p>צוות מקצועי שדואג לכל פרט בחוויית הטיסה שלך</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <h3>מחירים הוגנים</h3>
+                <p>התאמה מושלמת של מחיר לאיכות השירות</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-globe-americas"></i>
+                </div>
+                <h3>יעדים מגוונים</h3>
+                <p>מגוון רחב של יעדים ברחבי העולם</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endif %}
+
+<!-- Flight Results -->
+{% if flights %}
+<section class="results-section">
+    <div class="container">
+        <div class="results-header">
+            <h2 class="section-title">
+                <i class="fas fa-plane"></i>
+                תוצאות חיפוש
+            </h2>
+            <span class="results-count">{{ flights|length }} טיסות נמצאו</span>
+        </div>
+
+        <div class="flights-list">
+            {% for flight in flights %}
+                <div class="flight-card">
+                    <div class="flight-card-header">
+                        <div class="flight-route">
+                            <span class="airport origin">{{ flight.origin_airport }}</span>
+                            <div class="route-line">
+                                <i class="fas fa-plane"></i>
+                            </div>
+                            <span class="airport destination">{{ flight.destination_airport }}</span>
+                        </div>
+                        <span class="flight-status status-{{ flight.status.lower() }}">
+                            {{ flight.status }}
+                        </span>
+                    </div>
+
+                    <div class="flight-card-body">
+                        <div class="flight-info-grid">
+                            <div class="flight-info-item">
+                                <i class="fas fa-calendar"></i>
+                                <div>
+                                    <span class="label">תאריך</span>
+                                    <span class="value">{{ flight.departure_datetime.strftime('%d/%m/%Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="flight-info-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <span class="label">שעת המראה</span>
+                                    <span class="value">{{ flight.departure_datetime.strftime('%H:%M') }}</span>
+                                </div>
+                            </div>
+                            <div class="flight-info-item">
+                                <i class="fas fa-hourglass-half"></i>
+                                <div>
+                                    <span class="label">משך טיסה</span>
+                                    <span class="value">{{ flight.flight_duration }} שעות</span>
+                                </div>
+                            </div>
+                            <div class="flight-info-item">
+                                <i class="fas fa-plane"></i>
+                                <div>
+                                    <span class="label">מטוס</span>
+                                    <span class="value">{{ flight.manufacturer }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flight-card-footer">
+                        <div class="flight-number">
+                            <span>טיסה #{{ flight.flight_id }}</span>
+                        </div>
+                        <a href="{{ url_for('flights.seats', flight_id=flight.flight_id) }}" class="btn-primary">
+                            <i class="fas fa-chair"></i>
+                            בחר מושבים
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% elif request.method == 'POST' %}
+<section class="results-section">
+    <div class="container">
+        <div class="no-results">
+            <i class="fas fa-search"></i>
+            <h3>לא נמצאו טיסות</h3>
+            <p>נסה לחפש יעדים או תאריכים אחרים</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

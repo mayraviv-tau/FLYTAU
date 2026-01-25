@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}פרטי הזמנה #{{ order.order_id }} - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="order-details-container">
+    <h1>פרטי הזמנה #{{ order.order_id }}</h1>
+    
+    <div class="order-info">
+        <h2>פרטי הזמנה</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>סטטוס:</strong>
+                <span class="flight-status status-{{ order.order_status.lower().replace('_', '-') }}">
+                    {% if order.order_status == 'Active' %}פעילה
+                    {% elif order.order_status == 'Completed' %}הושלמה
+                    {% elif order.order_status == 'Canceled_By_Client' %}בוטלה ע"י הלקוח
+                    {% elif order.order_status == 'Canceled_By_Company' %}בוטלה ע"י החברה
+                    {% else %}{{ order.order_status }}{% endif %}
+                </span>
+            </div>
+            <div class="info-item">
+                <strong>תאריך הזמנה:</strong> {{ order.order_date.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="info-item">
+                <strong>סכום כולל:</strong> {{ order.total_payment }} ₪
+            </div>
+            <div class="info-item">
+                <strong>שם הנוסע:</strong> {{ order.first_name_english }} {{ order.last_name_english }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="flight-info">
+        <h2>פרטי טיסה</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <strong>מסלול:</strong> {{ order.origin_airport }} → {{ order.destination_airport }}
+            </div>
+            <div class="info-item">
+                <strong>תאריך ושעה:</strong> {{ order.departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+            </div>
+            <div class="info-item">
+                <strong>סטטוס טיסה:</strong> 
+                {% if order.flight_status == 'Active' %}פעילה
+                {% elif order.flight_status == 'Full' %}מלאה
+                {% elif order.flight_status == 'Landed' %}נחתה
+                {% elif order.flight_status == 'Canceled' %}בוטלה
+                {% else %}{{ order.flight_status }}{% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="tickets-info">
+        <h2>כרטיסים ({{ tickets|length }})</h2>
+        <table class="tickets-table">
+            <thead>
+                <tr>
+                    <th>מחלקה</th>
+                    <th>מושב</th>
+                    <th>מחיר</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ 'עסקים' if ticket.class_type == 'Business' else 'תיירים' }}</td>
+                        <td>{{ ticket.seat_number }}</td>
+                        <td>{{ ticket.price }} ₪</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="order-actions">
+        {% if can_cancel and order.order_status == 'Active' %}
+        <form method="POST" action="{{ url_for('orders.guest_cancel') }}" style="display: inline;">
+            <input type="hidden" name="order_id" value="{{ order.order_id }}">
+            <input type="hidden" name="email" value="{{ guest_email }}">
+            <button type="submit" class="btn-danger" 
+                    onclick="return confirm('האם אתה בטוח שברצונך לבטל את ההזמנה? יחויבו דמי ביטול של 5%')">
+                בטל הזמנה
+            </button>
+        </form>
+        {% elif order.order_status == 'Active' %}
+        <p class="info-box" style="background: #fff3cd; border-color: #ffc107; color: #856404;">
+            לא ניתן לבטל הזמנה פחות מ-36 שעות לפני מועד הטיסה
+        </p>
+        {% endif %}
+        
+        <a href="{{ url_for('orders.lookup') }}" class="btn-secondary">חזרה לחיפוש הזמנה</a>
+        <a href="{{ url_for('flights.search') }}" class="btn-secondary">חזרה לחיפוש טיסות</a>
+    </div>
+</div>
+{% endblock %}

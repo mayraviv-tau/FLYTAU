@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}דוחות ניהוליים - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <h1>דוחות ניהוליים</h1>
+    
+    <div class="reports-grid">
+        <div class="report-card">
+            <h2>דוח 1: אחוזי תפוסה ממוצעים</h2>
+            <p>חישוב אחוז התפוסה הממוצע של כל הטיסות שבוצעו</p>
+            <a href="{{ url_for('reports.occupancy') }}" class="btn-primary">הצג דוח</a>
+        </div>
+        
+        <div class="report-card">
+            <h2>דוח 2: ניתוח הכנסות</h2>
+            <p>סיכום הכנסות לפי גודל מטוס, יצרן ומחלקה</p>
+            <a href="{{ url_for('reports.revenue') }}" class="btn-primary">הצג דוח</a>
+        </div>
+        
+        <div class="report-card">
+            <h2>דוח 3: שעות טיסה של צוות</h2>
+            <p>מעקב אחר שעות טיסה מצטברות לכל עובד, מופרד לפי טיסות קצרות וארוכות</p>
+            <a href="{{ url_for('reports.staff_hours') }}" class="btn-primary">הצג דוח</a>
+        </div>
+        
+        <div class="report-card">
+            <h2>דוח 4: שיעור ביטולים חודשי</h2>
+            <p>מעקב אחר אחוז ההזמנות שבוטלו בכל חודש</p>
+            <a href="{{ url_for('reports.cancellations') }}" class="btn-primary">הצג דוח</a>
+        </div>
+        
+        <div class="report-card">
+            <h2>דוח 5: סיכום פעילות מטוסים חודשי</h2>
+            <p>דוח תפעולי לכל מטוס בחודש - מספר טיסות, ניצול, מסלול דומיננטי</p>
+            <a href="{{ url_for('reports.plane_activity') }}" class="btn-primary">הצג דוח</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

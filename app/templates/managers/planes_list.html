@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}רשימת מטוסים - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>רשימת מטוסים</h1>
+        <a href="{{ url_for('managers.plane_add') }}" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            הוסף מטוס חדש
+        </a>
+    </div>
+
+    {% if planes %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>מספר מטוס</th>
+            <th>יצרן</th>
+            <th>גודל</th>
+            <th>תאריך רכישה</th>
+            <th>מספר מחלקות</th>
+            <th>פעולות</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for plane in planes %}
+        <tr>
+            <td>{{ plane.plane_id }}</td>
+            <td>{{ plane.manufacturer }}</td>
+            <td>{{ plane.size_category }}</td>
+            <td>{{ plane.acquisition_date }}</td>
+            <td>{{ plane.classes_count }}</td>
+            <td>
+                <a href="{{ url_for('managers.plane_classes', plane_id=plane.plane_id) }}" class="btn-small">ניהול מחלקות</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-plane"></i>
+        <h3>אין מטוסים במערכת</h3>
+        <a href="{{ url_for('managers.plane_add') }}" class="btn-primary">הוסף מטוס חדש</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}דוח ניתוח הכנסות - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>דוח 2: ניתוח הכנסות</h1>
+    
+    <div class="report-content">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>גודל מטוס</th>
+                    <th>יצרן</th>
+                    <th>מחלקה</th>
+                    <th>הכנסה כוללת (₪)</th>
+                    <th>מספר כרטיסים</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ row.size_category }}</td>
+                        <td>{{ row.manufacturer }}</td>
+                        <td>{{ row.class_type }}</td>
+                        <td>{{ "%.2f"|format(row.total_revenue) }}</td>
+                        <td>{{ row.tickets_sold_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if not results %}
+            <p class="no-results">אין נתונים להצגה</p>
+        {% endif %}
+    </div>
+    
+    <div class="report-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn-secondary">חזרה לדוחות</a>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}הרשמה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>הרשמה למערכת</h1>
+    <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+        <div class="form-group">
+            <label for="email">כתובת מייל *</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="first_name">שם פרטי (באנגלית) *</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="last_name">שם משפחה (באנגלית) *</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">סיסמה *</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="birth_date">תאריך לידה *</label>
+            <input type="date" id="birth_date" name="birth_date" required
+                   placeholder="dd/mm/yyyy" title="פורמט: יום/חודש/שנה">
+            <small>פורמט: dd/mm/yyyy</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="passport_number">מספר דרכון *</label>
+            <input type="text" id="passport_number" name="passport_number" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone_number">מספר טלפון</label>
+            <input type="tel" id="phone_number" name="phone_number">
+            <button type="button" id="add-phone" class="btn-secondary">הוסף מספר נוסף</button>
+        </div>
+        <div id="phone-list"></div>
+        
+        <button type="submit" class="btn-primary">הרשם</button>
+    </form>
+    
+    <p class="auth-link">
+        כבר רשום? <a href="{{ url_for('auth.login') }}">התחבר כאן</a>
+    </p>
+</div>
+
+<script>
+document.getElementById('add-phone').addEventListener('click', function() {
+    const phoneList = document.getElementById('phone-list');
+    const newPhone = document.createElement('div');
+    newPhone.className = 'form-group';
+    newPhone.innerHTML = `
+        <label>מספר טלפון נוסף</label>
+        <input type="tel" name="phone_number" class="phone-input">
+        <button type="button" class="btn-secondary remove-phone">הסר</button>
+    `;
+    phoneList.appendChild(newPhone);
+    
+    newPhone.querySelector('.remove-phone').addEventListener('click', function() {
+        newPhone.remove();
+    });
+});
+</script>
+{% endblock %}
+
+
+
+
+

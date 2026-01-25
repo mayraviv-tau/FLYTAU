@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}דוח פעילות מטוסים חודשי - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>דוח 5: סיכום פעילות מטוסים חודשי</h1>
+    
+    <div class="report-content">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>חודש</th>
+                    <th>מספר מטוס</th>
+                    <th>מספר טיסות שבוצעו</th>
+                    <th>מספר טיסות שבוטלו</th>
+                    <th>אחוז ניצול (%)</th>
+                    <th>מסלול דומיננטי</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ row.month_year }}</td>
+                        <td>{{ row.plane_id }}</td>
+                        <td>{{ row.flights_performed }}</td>
+                        <td>{{ row.flights_canceled }}</td>
+                        <td>{{ row.utilization_pct }}%</td>
+                        <td>{{ row.dominant_route }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if not results %}
+            <p class="no-results">אין נתונים להצגה</p>
+        {% endif %}
+    </div>
+    
+    <div class="report-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn-secondary">חזרה לדוחות</a>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

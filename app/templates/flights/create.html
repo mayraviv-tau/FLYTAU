@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}יצירת טיסה חדשה - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>יצירת טיסה חדשה</h1>
+
+    <form method="POST" action="{{ url_for('flights.create') }}" class="main-form">
+        <div class="form-group">
+            <label for="origin_airport">שדה תעופה מקור *</label>
+            <select id="origin_airport" name="origin_airport" required>
+                <option value="">בחר שדה תעופה</option>
+                {% for airport in airports %}
+                    <option value="{{ airport.airport }}">{{ airport.airport }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="destination_airport">שדה תעופה יעד *</label>
+            <select id="destination_airport" name="destination_airport" required>
+                <option value="">בחר שדה תעופה</option>
+                {% for airport in airports %}
+                    <option value="{{ airport.airport }}">{{ airport.airport }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="plane_id">מטוס *</label>
+            <select id="plane_id" name="plane_id" required>
+                <option value="">בחר מטוס</option>
+                {% for plane in planes %}
+                    <option value="{{ plane.plane_id }}">
+                        מטוס {{ plane.plane_id }} - {{ plane.manufacturer }} ({{ plane.size_category }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="departure_datetime">תאריך ושעת המראה *</label>
+            <input type="datetime-local" id="departure_datetime" name="departure_datetime" required>
+        </div>
+
+        <div class="form-group">
+            <label for="price_economy">מחיר מחלקה רגילה (₪) *</label>
+            <input type="number" id="price_economy" name="price_economy" min="0" step="1" value="800" required>
+        </div>
+
+        <div class="form-group">
+            <label for="price_business">מחיר מחלקה עסקים (₪) - רק למטוסים עם מחלקת עסקים</label>
+            <input type="number" id="price_business" name="price_business" min="0" step="1" value="1500">
+            <small>הערה: אם המטוס הנבחר לא כולל מחלקת עסקים, המחיר יאופס אוטומטית</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">צור טיסה</button>
+            <a href="{{ url_for('flights.list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// Map plane_id to size_category
+const planeData = {
+    {% for plane in planes %}
+    {{ plane.plane_id }}: "{{ plane.size_category }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+const planeSelect = document.getElementById('plane_id');
+const businessPriceGroup = document.getElementById('price_business').closest('.form-group');
+const businessPriceInput = document.getElementById('price_business');
+
+function updateBusinessPriceVisibility() {
+    const selectedPlane = planeSelect.value;
+    if (selectedPlane && planeData[selectedPlane] === 'Small') {
+        businessPriceGroup.style.display = 'none';
+        businessPriceInput.removeAttribute('required');
+        businessPriceInput.value = '';
+    } else {
+        businessPriceGroup.style.display = 'block';
+    }
+}
+
+planeSelect.addEventListener('change', updateBusinessPriceVisibility);
+// Initial check
+updateBusinessPriceVisibility();
+</script>
+{% endblock %}
+
+
+
+
+

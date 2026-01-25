@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}רשימת דיילים - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>רשימת דיילים</h1>
+        <a href="{{ url_for('managers.attendant_add') }}" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            הוסף דייל חדש
+        </a>
+    </div>
+
+    {% if attendants %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>תעודת זהות</th>
+            <th>שם פרטי</th>
+            <th>שם משפחה</th>
+            <th>תאריך התחלה</th>
+            <th>טלפון</th>
+            <th>מוכשר לטיסות ארוכות</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for attendant in attendants %}
+        <tr>
+            <td>{{ attendant.id_number }}</td>
+            <td>{{ attendant.first_name_hebrew }}</td>
+            <td>{{ attendant.last_name_hebrew }}</td>
+            <td>{{ attendant.start_date }}</td>
+            <td>{{ attendant.phone_number }}</td>
+            <td>{% if attendant.is_long_haul_qualified %}כן{% else %}לא{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-user-friends"></i>
+        <h3>אין דיילים במערכת</h3>
+        <a href="{{ url_for('managers.attendant_add') }}" class="btn-primary">הוסף דייל חדש</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

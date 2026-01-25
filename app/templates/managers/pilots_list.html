@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}רשימת טייסים - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="container page-container">
+    <div class="content-header">
+        <h1>רשימת טייסים</h1>
+        <a href="{{ url_for('managers.pilot_add') }}" class="btn-primary">
+            <i class="fas fa-plus"></i>
+            הוסף טייס חדש
+        </a>
+    </div>
+
+    {% if pilots %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>תעודת זהות</th>
+            <th>שם פרטי</th>
+            <th>שם משפחה</th>
+            <th>תאריך התחלה</th>
+            <th>טלפון</th>
+            <th>מוכשר לטיסות ארוכות</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pilot in pilots %}
+        <tr>
+            <td>{{ pilot.id_number }}</td>
+            <td>{{ pilot.first_name_hebrew }}</td>
+            <td>{{ pilot.last_name_hebrew }}</td>
+            <td>{{ pilot.start_date }}</td>
+            <td>{{ pilot.phone_number }}</td>
+            <td>{% if pilot.is_long_haul_qualified %}כן{% else %}לא{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-user-tie"></i>
+        <h3>אין טייסים במערכת</h3>
+        <a href="{{ url_for('managers.pilot_add') }}" class="btn-primary">הוסף טייס חדש</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" width="200" height="50">
+  <!-- Airplane icon -->
+  <g transform="translate(5, 10)">
+    <path d="M30 15 L20 20 L5 18 L3 20 L15 25 L12 32 L8 32 L7 35 L12 34 L15 30 L25 35 L27 33 L22 22 L30 17 Z" 
+          fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+  </g>
+  <!-- Text -->
+  <text x="45" y="35" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="white">
+    FLY<tspan fill="#3498db">TAU</tspan>
+  </text>
+</svg>

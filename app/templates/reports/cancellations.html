@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}דוח שיעור ביטולים חודשי - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <h1>דוח 4: שיעור ביטולים חודשי</h1>
+    
+    <div class="report-content">
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>חודש</th>
+                    <th>סה"כ הזמנות</th>
+                    <th>הזמנות שבוטלו</th>
+                    <th>אחוז ביטול (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr>
+                        <td>{{ row.month_year }}</td>
+                        <td>{{ row.total_orders }}</td>
+                        <td>{{ row.canceled_orders_count }}</td>
+                        <td>{{ row.cancellation_rate_pct }}%</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if not results %}
+            <p class="no-results">אין נתונים להצגה</p>
+        {% endif %}
+    </div>
+    
+    <div class="report-actions">
+        <a href="{{ url_for('reports.index') }}" class="btn-secondary">חזרה לדוחות</a>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

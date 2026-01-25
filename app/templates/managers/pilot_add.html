@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}הוספת טייס חדש - FLYTAU{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>הוספת טייס חדש</h1>
+    
+    <form method="POST" action="{{ url_for('managers.pilot_add') }}" class="main-form">
+        <div class="form-group">
+            <label for="id_number">תעודת זהות *</label>
+            <input type="text" id="id_number" name="id_number" required pattern="[0-9]{9}" maxlength="9" minlength="9">
+            <small>9 ספרות בלבד</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="first_name_hebrew">שם פרטי (עברית) *</label>
+            <input type="text" id="first_name_hebrew" name="first_name_hebrew" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="last_name_hebrew">שם משפחה (עברית) *</label>
+            <input type="text" id="last_name_hebrew" name="last_name_hebrew" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="start_date">תאריך התחלת עבודה *</label>
+            <input type="date" id="start_date" name="start_date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone_number">מספר טלפון *</label>
+            <input type="text" id="phone_number" name="phone_number" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="city">עיר</label>
+            <input type="text" id="city" name="city">
+        </div>
+        
+        <div class="form-group">
+            <label for="street">רחוב</label>
+            <input type="text" id="street" name="street">
+        </div>
+        
+        <div class="form-group">
+            <label for="house_number">מספר בית</label>
+            <input type="text" id="house_number" name="house_number">
+        </div>
+        
+        <div class="form-group checkbox-group">
+            <label for="is_long_haul_qualified" class="checkbox-label">
+                <input type="checkbox" id="is_long_haul_qualified" name="is_long_haul_qualified">
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-text">מוכשר לטיסות ארוכות</span>
+            </label>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">הוסף טייס</button>
+            <a href="{{ url_for('managers.pilots_list') }}" class="btn-secondary">ביטול</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
